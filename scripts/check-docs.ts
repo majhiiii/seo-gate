@@ -4,7 +4,7 @@ import fg from 'fast-glob';
 
 async function main() {
   console.log('🔍 Running docs:check across documentation files...');
-  const docFiles = await fg(['docs/**/*.md', 'README.md', 'AGENTS.md'], { cwd: process.cwd() });
+  const docFiles = await fg(['docs/**/*.md', 'README.md', 'CONTRIBUTING.md', 'SECURITY.md'], { cwd: process.cwd() });
   let hasErrors = false;
 
   const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;

@@ -4,3 +4,9 @@ coverage/
 .sf/
 .temp/
 *.log
+
+# Local agent & AI guidelines (kept private)
+AGENTS.md
+CLAUDE.md
+.cursor/
+.claude/

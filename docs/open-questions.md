@@ -1,6 +1,6 @@
 # Open Questions & Assumptions Log
 
-This document tracks unresolved design questions, recorded assumptions, and future investigation topics for `seo-gate`. As required by Section 0 of [AGENTS.md](file:///d:/seo-gate/AGENTS.md), we never guess or invent facts—if something is unknown or pending operational measurement, it is documented here.
+This document tracks unresolved design questions, recorded assumptions, and future investigation topics for `seo-gate`. In accordance with our core engineering principles, we never guess or invent facts—if something is unknown or pending operational measurement, it is documented here.
 
 ---
 
