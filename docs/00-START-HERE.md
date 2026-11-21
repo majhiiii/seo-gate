@@ -34,10 +34,18 @@ flowchart LR
    - [docs/01-concepts/seo-basics.md](file:///d:/seo-gate/docs/01-concepts/seo-basics.md)
    - [docs/01-concepts/http-basics.md](file:///d:/seo-gate/docs/01-concepts/http-basics.md)
    - [docs/01-concepts/how-crawlers-and-rendering-work.md](file:///d:/seo-gate/docs/01-concepts/how-crawlers-and-rendering-work.md)
+   - [docs/01-concepts/ci-cd-concepts.md](file:///d:/seo-gate/docs/01-concepts/ci-cd-concepts.md)
+   - [docs/01-concepts/baselines-and-regression-testing.md](file:///d:/seo-gate/docs/01-concepts/baselines-and-regression-testing.md)
 2. Study system design:
    - [docs/02-system-design/data-model.md](file:///d:/seo-gate/docs/02-system-design/data-model.md)
    - [docs/02-system-design/architecture.md](file:///d:/seo-gate/docs/02-system-design/architecture.md)
-3. Review learning aids:
+   - [docs/02-system-design/sequence-diagrams.md](file:///d:/seo-gate/docs/02-system-design/sequence-diagrams.md)
+3. Study architectural decisions:
+   - [docs/03-decisions/ADR-0001-baseline-file-format-and-storage.md](file:///d:/seo-gate/docs/03-decisions/ADR-0001-baseline-file-format-and-storage.md)
+   - [docs/03-decisions/ADR-0002-finding-identity-and-diff-strategy.md](file:///d:/seo-gate/docs/03-decisions/ADR-0002-finding-identity-and-diff-strategy.md)
+4. Code walkthrough:
+   - [docs/04-code-walkthrough/baseline-diff-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/baseline-diff-walkthrough.md)
+5. Review learning aids:
    - [docs/05-learning/glossary.md](file:///d:/seo-gate/docs/05-learning/glossary.md)
    - [docs/05-learning/learning-checkpoints.md](file:///d:/seo-gate/docs/05-learning/learning-checkpoints.md)
 

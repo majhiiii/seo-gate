@@ -44,3 +44,43 @@ This document tracks your progress through each phase of `seo-gate`. After each 
 
 ### 5. 10-Minute "Explain it back" prompt
 > *"Imagine you are in an interview for a Senior Backend / Integration Engineer role. The interviewer asks: 'How did you architect the crawling and checking pipeline for seo-gate?' Take 10 minutes to walk through: (1) how URLs are discovered and queued, (2) why concurrency limits and polite pacing are essential, (3) how Cheerio parses HTML in memory, and (4) why the checks are implemented as pure, decoupled functions with Salesforce validation rule analogies."*
+
+
+---
+
+## Phase 2 Checkpoint: Baselines, Regression Diffing & Markdown Reports
+
+### 1. What was built
+- **Baseline Storage Engine (`src/baseline/storage.ts`):** Created versioned baseline snapshot manager (`schemaVersion: 1`), with support for saving known good runs and loading them into memory without external database dependencies.
+- **Diff & Regression Engine (`src/baseline/diff.ts`):** Built cross-environment fingerprinting (`${checkId}::${pathname}`), isolating hostnames so preview deployments can be accurately compared against production baselines. Categorizes issues into `newFindings`, `resolvedFindings`, and `unchangedFindings`.
+- **Three Gate Modes (`strict`, `regression`, `report`):**
+  - `strict`: Fails on any error.
+  - `regression`: Fails only when new errors are introduced beyond the baseline. Existing baseline debt passes.
+  - `report`: Always passes, reporting all findings without blocking deployment.
+- **Markdown PR Report Generator (`src/report/markdown.ts`):** Formats GitHub-ready Markdown reports with summary metrics, top regressions tables, and collapsible `<details>` blocks for pre-existing debt, resolved issues, and documented active ignores.
+- **CLI Commands:** Added `seo-gate baseline update` and `seo-gate diff fileA fileB`, plus full `--baseline` integration in `seo-gate run`.
+
+### 2. Five concepts you must understand
+1. **Host-Agnostic Fingerprinting:** Ephemeral preview environments generate dynamic hosts (e.g. `preview-99.vercel.app`). Comparing full URLs fails; stripping the origin and matching on `${checkId}::${pathname}` allows accurate cross-environment diffing.
+2. **Regression Mode vs. Strict Mode:** In an enterprise codebase with existing SEO debt, strict mode blocks innocent feature PRs. Regression mode ensures developers are held accountable only for the regressions introduced by their PR.
+3. **Three-Way Partitioning:** A diff engine must partition findings into `new`, `unchanged`, and `resolved`. Celebrating resolved findings encourages developers to clean up technical debt.
+4. **Git-as-Database Architecture (ADR-0001):** By committing `baseline.json` into Git, baselines are versioned alongside application code with full audit history and zero external database infrastructure.
+5. **Human-Centric PR Reports:** Pull request comments must highlight actionable fixes first, while collapsing noisy baseline debt into expandable `<details>` accordions to keep PR discussions clean.
+
+### 3. Five self-test questions & answers
+1. **Q: Why can't we use the full absolute URL as the unique identifier for diffing?**
+   *A:* In CI pipelines, preview URLs change dynamically on every pull request (e.g. `https://preview-12.example.com` vs. `https://preview-13.example.com`). If we included the hostname, every existing finding would be classified as a brand new regression.
+2. **Q: What happens if a pull request fixes a pre-existing SEO error that was present in the baseline?**
+   *A:* The diff engine identifies it as a `resolvedFinding`, reports it in the "Resolved Issues" section of the PR summary, and does not fail the gate.
+3. **Q: What is the purpose of the `seo-gate baseline update` command?**
+   *A:* It crawls a known-good target (usually production or staging after a release) and updates the committed `baseline.json` file.
+4. **Q: How does `seo-gate diff fileA.json fileB.json` help developers locally?**
+   *A:* It allows developers to compare two local run results or a local run against a baseline file to inspect what changed without running a full CI pipeline.
+5. **Q: What exit code does `seo-gate` return in `regression` mode if the preview site has 10 pre-existing errors in the baseline, but 0 new errors?**
+   *A:* It exits with code `0` (Gate Passed), because no new regressions were introduced by the pull request.
+
+### 4. One thing that could break
+- **Outdated Baseline File:** If teams forget to run `seo-gate baseline update` after an intentional architectural redesign or page addition, `seo-gate` will flag newly introduced intentional pages or changes as regressions in subsequent pull requests until the baseline is refreshed.
+
+### 5. 10-Minute "Explain it back" prompt
+> *"Imagine an interviewer asks: 'How did you prevent legacy technical debt from blocking developers while still catching regressions?' Spend 10 minutes explaining: (1) how baselines are captured and stored in Git, (2) how finding fingerprints strip ephemeral hostnames, (3) how three-way partitioning differentiates between new regressions and pre-existing issues, and (4) why the Salesforce deployment analogy of RunSpecifiedTests maps to regression mode."*

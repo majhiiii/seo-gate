@@ -19,3 +19,22 @@ This document logs significant architectural choices, technical decisions, and e
   5. `canonical`: Asserts presence, absolute URL format, self-referencing consistency, and non-error target.
   6. `noindex`: Detects accidental `noindex` directives on indexable pages via `<meta name="robots">` and `X-Robots-Tag` headers.
 - **Deterministic Output:** Enforced alphabetical sorting of findings by URL and `checkId` across all reporters.
+
+
+---
+
+### [2026-11-21] Phase 2: Baselines, Regression Diffing & Markdown PR Reporting
+
+#### Added
+- **Baseline Engine (`src/baseline/`):** Implemented snapshot creation, file serialization, and schema validation (`schemaVersion: 1`).
+- **Diff Strategy (ADR-0002):** Implemented host-agnostic finding fingerprinting (`${checkId}::${pathname}`), enabling seamless comparison between dynamic preview environments and production baselines.
+- **Three-Way Partitioning:** Diff engine partitions findings into `newFindings`, `resolvedFindings`, and `unchangedFindings`.
+- **Gate Evaluation:** Implemented `evaluateGate()` supporting `strict`, `regression`, and `report` modes.
+- **Markdown Reporter (`src/report/markdown.ts`):** Generates clean, actionable GitHub PR summaries with collapsible sections for baseline debt and resolved issues.
+- **CLI Subcommands:**
+  - `seo-gate baseline update --config <path> [--output <path>]`
+  - `seo-gate diff <fileA> <fileB>`
+  - `--baseline` and `--format md` options for `seo-gate run`.
+- **Architectural Decision Records:**
+  - `ADR-0001`: Baseline file format and Git-based storage strategy.
+  - `ADR-0002`: Finding identity and cross-environment diff strategy.

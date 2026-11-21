@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { executeInit, executeRun } from './commands.js';
+import { executeInit, executeRun, executeBaselineUpdate, executeDiff } from './commands.js';
 import type { GateMode } from '../types.js';
 
 const program = new Command();
@@ -26,8 +26,8 @@ program
   .requiredOption('-c, --config <path>', 'Path to seo-gate.config.yml configuration file')
   .option('-m, --mode <mode>', 'Gate mode: strict | regression | report')
   .option('-b, --baseline <path>', 'Path to baseline snapshot JSON file')
-  .option('-f, --format <format>', 'Report format (json)', 'json')
-  .option('-o, --output <path>', 'Output path for the report', 'seo-gate-report.json')
+  .option('-f, --format <format>', 'Report format: json | md', 'json')
+  .option('-o, --output <path>', 'Output path for report')
   .action(async (options) => {
     const exitCode = await executeRun({
       config: options.config,
@@ -36,6 +36,33 @@ program
       output: options.output,
       baseline: options.baseline,
     });
+    process.exit(exitCode);
+  });
+
+const baselineCmd = program
+  .command('baseline')
+  .description('Manage SEO regression baseline snapshots');
+
+baselineCmd
+  .command('update')
+  .description('Crawl target and update the baseline snapshot JSON file')
+  .requiredOption('-c, --config <path>', 'Path to seo-gate.config.yml configuration file')
+  .option('-o, --output <path>', 'Output path for baseline snapshot', 'baseline.json')
+  .action(async (options) => {
+    const exitCode = await executeBaselineUpdate({
+      config: options.config,
+      output: options.output,
+    });
+    process.exit(exitCode);
+  });
+
+program
+  .command('diff')
+  .description('Diff two JSON run results or baseline files')
+  .argument('<fileA>', 'Path to baseline / original JSON file')
+  .argument('<fileB>', 'Path to target / new JSON run result file')
+  .action(async (fileA, fileB) => {
+    const exitCode = await executeDiff(fileA, fileB);
     process.exit(exitCode);
   });
 
