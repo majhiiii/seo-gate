@@ -6,6 +6,7 @@ import { crawlTarget, CrawlerError } from '../crawl/fetcher.js';
 import { runChecks } from '../checks/runner.js';
 import { buildRunResult, writeJsonReport } from '../report/json.js';
 import { generateMarkdownReport, writeMarkdownReport } from '../report/markdown.js';
+import { generateHtmlReport, writeHtmlReport } from '../report/html.js';
 import { postOrUpdateStickyComment } from '../github/comment.js';
 import { sendSlackNotification, sendTeamsNotification } from '../report/webhook.js';
 import {
@@ -15,7 +16,8 @@ import {
   BaselineError,
 } from '../baseline/storage.js';
 import { diffFindings, evaluateGate } from '../baseline/diff.js';
-import type { GateMode, Finding } from '../types.js';
+import { auditPagePerformance, diffPerformance } from '../lighthouse/runner.js';
+import type { GateMode, Finding, PagePerformanceAudit, PerformanceRegression } from '../types.js';
 import type { DiffResult } from '../baseline/types.js';
 
 export interface RunCommandOptions {
@@ -28,11 +30,14 @@ export interface RunCommandOptions {
   githubToken?: string;
   slackWebhook?: string;
   teamsWebhook?: string;
+  performance?: boolean;
+  html?: string;
 }
 
 export interface BaselineUpdateOptions {
   config: string;
   output?: string;
+  performance?: boolean;
 }
 
 export async function executeInit(targetUrl?: string): Promise<number> {
@@ -114,6 +119,39 @@ export async function executeRun(options: RunCommandOptions): Promise<number> {
   const totalErrors = checkResults.findings.filter((f) => f.severity === 'error').length;
   const totalWarnings = checkResults.findings.filter((f) => f.severity === 'warn').length;
 
+  // 4b. Optional Lighthouse Lab Performance Audits
+  const performanceAudits: PagePerformanceAudit[] = [];
+  let performanceRegressions: PerformanceRegression[] = [];
+
+  if (options.performance) {
+    const urlsToAudit = config.pages.critical && config.pages.critical.length > 0
+      ? config.pages.critical.map((p) => p.startsWith('http') ? p : `${config.target.replace(/\/$/, '')}${p.startsWith('/') ? '' : '/'}${p}`)
+      : pages.slice(0, 3).map((p) => p.url);
+
+    console.log(pc.dim(`   Auditing lab performance (Lighthouse) on ${urlsToAudit.length} key page(s)...`));
+    for (const url of urlsToAudit) {
+      try {
+        const audit = await auditPagePerformance(
+          url,
+          config.budgets?.runs ?? 3,
+          config.budgets?.profile ?? 'mobile'
+        );
+        performanceAudits.push(audit);
+      } catch (err) {
+        console.warn(pc.yellow(`   ⚠ Lighthouse audit skipped for ${url}: ${(err as Error).message}`));
+      }
+    }
+
+    if (performanceAudits.length > 0) {
+      performanceRegressions = await diffPerformance(
+        performanceAudits,
+        baselineSnapshot?.performance,
+        config.budgets,
+        (retestUrl) => auditPagePerformance(retestUrl, config.budgets?.runs ?? 3, config.budgets?.profile ?? 'mobile')
+      );
+    }
+  }
+
   // 5. Diff with baseline if available
   let diffResult: DiffResult | undefined;
   let passed = true;
@@ -130,6 +168,12 @@ export async function executeRun(options: RunCommandOptions): Promise<number> {
     }
   }
 
+  // Confirmed performance regressions fail gate in strict and regression modes
+  const confirmedPerfRegressions = performanceRegressions.filter((p) => p.reproduced);
+  if (confirmedPerfRegressions.length > 0 && config.mode !== 'report') {
+    passed = false;
+  }
+
   const regressions = diffResult ? diffResult.regressions : (config.mode === 'regression' ? checkResults.findings.filter((f) => f.severity === 'error') : []);
 
   // 6. Build outputs
@@ -139,11 +183,15 @@ export async function executeRun(options: RunCommandOptions): Promise<number> {
     totalPages: pages.length,
     findings: checkResults.findings,
     regressions,
+    performance: performanceAudits,
+    performanceRegressions,
     ignoredCount: checkResults.ignoredCount,
   });
   runResult.passed = passed;
 
   const outputPath = options.output || 'seo-gate-report.json';
+  const htmlOutputPath = options.html || (options.format === 'html' ? outputPath : undefined);
+
   const mdReport = generateMarkdownReport({
     target: config.target,
     mode: config.mode,
@@ -151,11 +199,36 @@ export async function executeRun(options: RunCommandOptions): Promise<number> {
     passed,
     findings: checkResults.findings,
     diffResult,
+    performance: performanceAudits,
+    performanceRegressions,
     ignoredCount: checkResults.ignoredCount,
     activeIgnores: config.ignore,
+    htmlReportLink: htmlOutputPath,
   });
 
-  if (options.format === 'md' || options.format === 'markdown' || outputPath.endsWith('.md')) {
+  const htmlReport = generateHtmlReport({
+    target: config.target,
+    mode: config.mode,
+    totalPages: pages.length,
+    passed,
+    findings: checkResults.findings,
+    diffResult,
+    performance: performanceAudits,
+    performanceRegressions,
+    ignoredCount: checkResults.ignoredCount,
+    activeIgnores: config.ignore,
+    durationSeconds: Number(((Date.now() - startTime) / 1000).toFixed(2)),
+  });
+
+  if (options.html && options.html !== outputPath) {
+    writeHtmlReport(htmlReport, options.html);
+    console.log(pc.dim(`   ✓ Wrote HTML report to ${options.html}`));
+  }
+
+  if (options.format === 'html' || outputPath.endsWith('.html')) {
+    writeHtmlReport(htmlReport, outputPath);
+    console.log(pc.dim(`   ✓ Wrote HTML report to ${outputPath}`));
+  } else if (options.format === 'md' || options.format === 'markdown' || outputPath.endsWith('.md')) {
     writeMarkdownReport(mdReport, outputPath);
     console.log(pc.dim(`   ✓ Wrote Markdown report to ${outputPath}`));
   } else {
@@ -290,7 +363,30 @@ export async function executeBaselineUpdate(options: BaselineUpdateOptions): Pro
   }
 
   const checkResults = runChecks(pages, config);
-  const baseline = createBaselineFromRun(targetToCrawl, pages.length, checkResults.findings);
+
+  let performanceAudits: PagePerformanceAudit[] | undefined;
+  if (options.performance) {
+    const urlsToAudit = config.pages.critical && config.pages.critical.length > 0
+      ? config.pages.critical.map((p) => p.startsWith('http') ? p : `${targetToCrawl.replace(/\/$/, '')}${p.startsWith('/') ? '' : '/'}${p}`)
+      : pages.slice(0, 3).map((p) => p.url);
+
+    console.log(pc.dim(`   Auditing baseline lab performance on ${urlsToAudit.length} key page(s)...`));
+    performanceAudits = [];
+    for (const url of urlsToAudit) {
+      try {
+        const audit = await auditPagePerformance(
+          url,
+          config.budgets?.runs ?? 3,
+          config.budgets?.profile ?? 'mobile'
+        );
+        performanceAudits.push(audit);
+      } catch (err) {
+        console.warn(pc.yellow(`   ⚠ Lighthouse audit skipped for ${url}: ${(err as Error).message}`));
+      }
+    }
+  }
+
+  const baseline = createBaselineFromRun(targetToCrawl, pages.length, checkResults.findings, performanceAudits);
 
   const outputPath = options.output || 'baseline.json';
   writeBaseline(baseline, outputPath);

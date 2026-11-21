@@ -73,3 +73,20 @@ This document logs significant architectural choices, technical decisions, and e
   - Added [docs/01-concepts/structured-data.md](file:///d:/seo-gate/docs/01-concepts/structured-data.md).
   - Added [docs/02-system-design/failure-modes-and-reliability.md](file:///d:/seo-gate/docs/02-system-design/failure-modes-and-reliability.md).
   - Added [docs/04-code-walkthrough/checks-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/checks-walkthrough.md).
+
+
+---
+
+### [2026-11-21] Phase 5: Lighthouse Lab Budgets, Flaky Protection & Interactive HTML Reports
+
+#### Added
+- **Programmatic Lighthouse Integration (`src/lighthouse/runner.ts`):** Orchestrates Chrome DevTools Protocol sessions with Playwright Chromium, extracting median metrics across $N$ runs (default: 3) for LCP, CLS, TBT, JS weight, and Image weight.
+- **Performance Budget Engine:** Supports configurable thresholds (`budgets: { lcpMs: 2500, cls: 0.1, totalJsKb: 500, tolerancePercent: 10 }`) comparing against baseline snapshots.
+- **Two-Strike Flaky Protection:** Automatically re-tests failing performance metrics; only regressions that reproduce twice fail the CI gate, filtering out virtualized CI runner jitter.
+- **Interactive Standalone HTML Report (`src/report/html.ts`):** Single-file HTML report with embedded styles and vanilla JS, live search filtering, severity toggle buttons, and lab performance comparison table.
+- **CLI Options:** Added `--performance`, `--format html`, and `--html <path>`.
+- **System Design & Documentation:**
+  - Added [docs/01-concepts/lighthouse-and-core-web-vitals.md](file:///d:/seo-gate/docs/01-concepts/lighthouse-and-core-web-vitals.md).
+  - Added [docs/02-system-design/performance-and-scaling.md](file:///d:/seo-gate/docs/02-system-design/performance-and-scaling.md).
+  - Added [docs/02-system-design/trade-offs.md](file:///d:/seo-gate/docs/02-system-design/trade-offs.md).
+  - Added [docs/04-code-walkthrough/reports-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/reports-walkthrough.md).

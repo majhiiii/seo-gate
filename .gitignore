@@ -5,6 +5,11 @@ coverage/
 .temp/
 *.log
 
+# Generated test artifacts & reports
+reports/
+seo-gate-report.html
+seo-gate-report.json
+
 # Local agent & AI guidelines (kept private)
 AGENTS.md
 CLAUDE.md

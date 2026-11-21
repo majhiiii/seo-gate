@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Finding } from '../types.js';
+import type { Finding, PagePerformanceAudit } from '../types.js';
 import type { BaselineSnapshot } from './types.js';
 
 export class BaselineError extends Error {
@@ -13,7 +13,8 @@ export class BaselineError extends Error {
 export function createBaselineFromRun(
   target: string,
   totalPages: number,
-  findings: Finding[]
+  findings: Finding[],
+  performance?: PagePerformanceAudit[]
 ): BaselineSnapshot {
   const sortedFindings = [...findings].sort((a, b) => {
     const urlCmp = a.url.localeCompare(b.url);
@@ -27,6 +28,7 @@ export function createBaselineFromRun(
     target,
     totalPages,
     findings: sortedFindings,
+    performance,
   };
 }
 

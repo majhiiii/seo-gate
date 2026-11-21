@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Finding, GateMode, RunResult } from '../types.js';
+import type { Finding, GateMode, PagePerformanceAudit, PerformanceRegression, RunResult } from '../types.js';
 
 export interface CreateReportOptions {
   target: string;
@@ -8,6 +8,8 @@ export interface CreateReportOptions {
   totalPages: number;
   findings: Finding[];
   regressions?: Finding[];
+  performance?: PagePerformanceAudit[];
+  performanceRegressions?: PerformanceRegression[];
   ignoredCount?: number;
 }
 
@@ -15,11 +17,12 @@ export function buildRunResult(options: CreateReportOptions): RunResult {
   const errors = options.findings.filter((f) => f.severity === 'error').length;
   const warnings = options.findings.filter((f) => f.severity === 'warn').length;
   const info = options.findings.filter((f) => f.severity === 'info').length;
-  const regressions = options.regressions?.length ?? 0;
+  const regressions = (options.regressions?.length ?? 0) +
+    (options.performanceRegressions?.filter((p) => p.reproduced).length ?? 0);
 
   let passed = true;
   if (options.mode === 'strict') {
-    passed = errors === 0;
+    passed = errors === 0 && (options.performanceRegressions?.length ?? 0) === 0;
   } else if (options.mode === 'regression') {
     passed = regressions === 0;
   } else if (options.mode === 'report') {
@@ -41,6 +44,8 @@ export function buildRunResult(options: CreateReportOptions): RunResult {
     },
     findings: options.findings,
     regressions: options.regressions,
+    performance: options.performance,
+    performanceRegressions: options.performanceRegressions,
     ignoredCount: options.ignoredCount ?? 0,
   };
 }

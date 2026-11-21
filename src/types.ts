@@ -125,6 +125,8 @@ export interface SeoGateConfig {
   };
   /** Custom severity overrides by checkId */
   severity_overrides?: Record<string, Severity>;
+  /** Performance lab audit budgets */
+  budgets?: PerformanceBudgets;
   /** Explicitly ignored findings */
   ignore?: IgnoreRule[];
 }
@@ -137,6 +139,44 @@ export interface RunSummary {
   regressions: number;
 }
 
+export interface PerformanceMetrics {
+  lcpMs: number;
+  cls: number;
+  tbtMs: number;
+  totalJsKb: number;
+  totalImageKb: number;
+  profile: 'mobile' | 'desktop';
+}
+
+export interface PagePerformanceAudit {
+  url: string;
+  runs: number;
+  metrics: PerformanceMetrics;
+}
+
+export interface PerformanceBudgets {
+  lcpMs?: number;
+  cls?: number;
+  tbtMs?: number;
+  totalJsKb?: number;
+  totalImageKb?: number;
+  tolerancePercent?: number;
+  runs?: number;
+  profile?: 'mobile' | 'desktop';
+}
+
+export interface PerformanceRegression {
+  url: string;
+  metric: 'lcpMs' | 'cls' | 'tbtMs' | 'totalJsKb' | 'totalImageKb';
+  current: number;
+  baseline?: number;
+  budget?: number;
+  tolerancePercent: number;
+  deltaPercent: number;
+  reproduced: boolean;
+  message: string;
+}
+
 export interface RunResult {
   schemaVersion: 1;
   timestamp: string;
@@ -146,5 +186,7 @@ export interface RunResult {
   summary: RunSummary;
   findings: Finding[];
   regressions?: Finding[];
+  performance?: PagePerformanceAudit[];
+  performanceRegressions?: PerformanceRegression[];
   ignoredCount?: number;
 }

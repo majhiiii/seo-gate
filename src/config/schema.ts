@@ -77,6 +77,17 @@ const ChecksSchema = z.object({
   robotsTxt: RobotsTxtCheckSchema.default({ disallowRootOnError: true }),
 });
 
+export const PerformanceBudgetsSchema = z.object({
+  lcpMs: z.number().default(2500),
+  cls: z.number().default(0.1),
+  tbtMs: z.number().default(300),
+  totalJsKb: z.number().default(500),
+  totalImageKb: z.number().default(1000),
+  tolerancePercent: z.number().default(10),
+  runs: z.number().int().min(1).max(5).default(3),
+  profile: z.enum(['mobile', 'desktop']).default('mobile'),
+});
+
 export const SeoGateConfigSchema = z.object({
   target: z.string().url('Target must be a valid absolute URL (e.g. https://preview.example.com)'),
   production: z.string().url('Production target must be a valid absolute URL').optional(),
@@ -107,6 +118,7 @@ export const SeoGateConfigSchema = z.object({
     robotsTxt: { disallowRootOnError: true },
   }),
   severity_overrides: z.record(z.string(), SeveritySchema).default({}),
+  budgets: PerformanceBudgetsSchema.optional(),
   ignore: z.array(IgnoreRuleSchema).default([]),
 });
 

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Finding, GateMode } from '../types.js';
+import type { Finding, GateMode, PagePerformanceAudit, PerformanceRegression } from '../types.js';
 import type { DiffResult } from '../baseline/types.js';
 
 export interface MarkdownReportOptions {
@@ -10,8 +10,11 @@ export interface MarkdownReportOptions {
   passed: boolean;
   findings: Finding[];
   diffResult?: DiffResult;
+  performance?: PagePerformanceAudit[];
+  performanceRegressions?: PerformanceRegression[];
   ignoredCount?: number;
   activeIgnores?: { check: string; url: string; reason: string; expires?: string }[];
+  htmlReportLink?: string;
 }
 
 export function generateMarkdownReport(options: MarkdownReportOptions): string {
@@ -20,7 +23,8 @@ export function generateMarkdownReport(options: MarkdownReportOptions): string {
 
   const errors = options.findings.filter((f) => f.severity === 'error').length;
   const warnings = options.findings.filter((f) => f.severity === 'warn').length;
-  const regressions = options.diffResult ? options.diffResult.regressions.length : errors;
+  const regressions = (options.diffResult ? options.diffResult.regressions.length : errors) +
+    (options.performanceRegressions?.filter((p) => p.reproduced).length ?? 0);
   const resolved = options.diffResult ? options.diffResult.resolvedFindings.length : 0;
 
   const lines: string[] = [];
@@ -64,7 +68,28 @@ export function generateMarkdownReport(options: MarkdownReportOptions): string {
     }
   }
 
-  // 4. Resolved Issues Section (Celebrated)
+  // 4. Performance Lab Audits Section
+  if (options.performance && options.performance.length > 0) {
+    lines.push('### ⚡ Lab Performance Audits (Lighthouse)\n');
+    lines.push('> *Simulated lab metrics (median of runs). Not field Core Web Vitals.*\n');
+    lines.push('| Page | Profile | LCP | CLS | TBT | Total JS | Total Images |');
+    lines.push('|---|---|---|---|---|---|---|');
+    for (const p of options.performance) {
+      lines.push(`| \`${p.url}\` | ${p.metrics.profile} | ${p.metrics.lcpMs}ms | ${p.metrics.cls} | ${p.metrics.tbtMs}ms | ${p.metrics.totalJsKb}kB | ${p.metrics.totalImageKb}kB |`);
+    }
+    lines.push('');
+
+    if (options.performanceRegressions && options.performanceRegressions.length > 0) {
+      lines.push('**Performance Regressions:**\n');
+      for (const pr of options.performanceRegressions) {
+        const badge = pr.reproduced ? '🚨 **REGRESSION**' : '⚠️ **TRANSIENT**';
+        lines.push(`- ${badge} \`${pr.metric}\` on ${pr.url}: ${pr.message}`);
+      }
+      lines.push('');
+    }
+  }
+
+  // 5. Resolved Issues Section (Celebrated)
   if (options.diffResult && options.diffResult.resolvedFindings.length > 0) {
     lines.push('<details>');
     lines.push(`<summary><b>🎉 Resolved Issues (${options.diffResult.resolvedFindings.length})</b></summary>\n`);
@@ -76,7 +101,7 @@ export function generateMarkdownReport(options: MarkdownReportOptions): string {
     lines.push('</details>\n');
   }
 
-  // 5. Pre-existing Technical Debt Section (Collapsed)
+  // 6. Pre-existing Technical Debt Section (Collapsed)
   if (options.diffResult && options.diffResult.unchangedFindings.length > 0) {
     lines.push('<details>');
     lines.push(`<summary><b>📋 Pre-existing Technical Debt from Baseline (${options.diffResult.unchangedFindings.length})</b></summary>\n`);
@@ -90,7 +115,7 @@ export function generateMarkdownReport(options: MarkdownReportOptions): string {
     lines.push('</details>\n');
   }
 
-  // 6. Active Documented Ignores Section (Collapsed)
+  // 7. Active Documented Ignores Section (Collapsed)
   if (options.activeIgnores && options.activeIgnores.length > 0) {
     lines.push('<details>');
     lines.push(`<summary><b>🛡️ Active Documented Ignores (${options.activeIgnores.length})</b></summary>\n`);
@@ -100,6 +125,11 @@ export function generateMarkdownReport(options: MarkdownReportOptions): string {
       lines.push(`| \`${rule.check}\` | \`${rule.url}\` | ${rule.reason} | ${rule.expires || 'None'} |`);
     }
     lines.push('</details>\n');
+  }
+
+  // 8. Full HTML report link
+  if (options.htmlReportLink) {
+    lines.push(`\n📊 [View Full Interactive HTML Report](${options.htmlReportLink})\n`);
   }
 
   return lines.join('\n');

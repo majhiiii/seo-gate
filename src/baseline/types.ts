@@ -1,4 +1,4 @@
-import type { Finding } from '../types.js';
+import type { Finding, PagePerformanceAudit, PerformanceRegression } from '../types.js';
 
 export interface BaselineSnapshot {
   schemaVersion: 1;
@@ -6,6 +6,7 @@ export interface BaselineSnapshot {
   target: string;
   totalPages: number;
   findings: Finding[];
+  performance?: PagePerformanceAudit[];
 }
 
 export interface DiffResult {
@@ -17,4 +18,6 @@ export interface DiffResult {
   unchangedFindings: Finding[];
   /** New findings with severity 'error' that trigger a gate failure */
   regressions: Finding[];
+  /** Performance metric regressions vs baseline */
+  performanceRegressions?: PerformanceRegression[];
 }

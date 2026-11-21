@@ -26,8 +26,10 @@ program
   .requiredOption('-c, --config <path>', 'Path to seo-gate.config.yml configuration file')
   .option('-m, --mode <mode>', 'Gate mode: strict | regression | report')
   .option('-b, --baseline <path>', 'Path to baseline snapshot JSON file')
-  .option('-f, --format <format>', 'Report format: json | md', 'json')
+  .option('-f, --format <format>', 'Report format: json | md | html', 'json')
   .option('-o, --output <path>', 'Output path for report')
+  .option('--html <path>', 'Write standalone HTML report to specified path')
+  .option('--performance', 'Run Lighthouse lab performance audits on critical pages')
   .option('--pr <number>', 'Pull request number for sticky PR comment')
   .option('--github-token <token>', 'GitHub personal access token or secrets.GITHUB_TOKEN')
   .option('--slack-webhook <url>', 'Slack incoming webhook URL for alert card')
@@ -38,6 +40,8 @@ program
       mode: options.mode as GateMode | undefined,
       format: options.format,
       output: options.output,
+      html: options.html,
+      performance: Boolean(options.performance),
       baseline: options.baseline,
       pr: options.pr ? parseInt(options.pr, 10) : undefined,
       githubToken: options.githubToken,
@@ -56,10 +60,12 @@ baselineCmd
   .description('Crawl target and update the baseline snapshot JSON file')
   .requiredOption('-c, --config <path>', 'Path to seo-gate.config.yml configuration file')
   .option('-o, --output <path>', 'Output path for baseline snapshot', 'baseline.json')
+  .option('--performance', 'Also capture Lighthouse lab performance metrics in baseline')
   .action(async (options) => {
     const exitCode = await executeBaselineUpdate({
       config: options.config,
       output: options.output,
+      performance: Boolean(options.performance),
     });
     process.exit(exitCode);
   });

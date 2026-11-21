@@ -166,3 +166,45 @@ This document tracks your progress through each phase of `seo-gate`. After each 
 
 ### 5. 10-Minute "Explain it back" prompt
 > *"Imagine an interviewer asks: 'How did you solve the single-page application and dynamic storefront SEO problem?' Spend 10 minutes explaining: (1) why client-rendered LWC/React apps fail initial crawler passes, (2) how Playwright headless rendering compares raw vs hydrated DOM, (3) how structured data and hreflang reciprocity are verified deterministically, and (4) how you optimized headless browser performance in resource-constrained CI environments."*
+
+
+---
+
+## Phase 5 Checkpoint: Lighthouse Lab Budgets, Flaky Protection & Interactive HTML Reports
+
+### 1. What was built
+- **Programmatic Lighthouse Runner (`src/lighthouse/runner.ts`):** Connects to headless Playwright Chromium via Chrome DevTools Protocol (`--remote-debugging-port`), computing medians across $N$ runs (default: 3) for LCP, CLS, TBT, JS weight, and Image weight.
+- **Performance Budgeting & Diff Engine:** Compares current lab metrics against baseline snapshots and absolute budgets (e.g., LCP 2500ms, JS 500kB) with configurable regression tolerance (default: 10%).
+- **Flaky-Test Confirmation Re-run:** Automatically triggers an immediate confirmation audit when a regression is detected. Only if the regression reproduces does it fail the gate; transient CI runner CPU/network jitter is marked as non-blocking warnings.
+- **Interactive Standalone HTML Report (`src/report/html.ts`):** Single-file HTML report with zero external CDN dependencies, embedded CSS/JS, live search filtering, severity toggle buttons (All, Errors, Warnings), URL selector, collapsible evidence, and lab performance comparison table.
+- **CLI & Markdown Upgrades:** Added `--format html`, `--html <path>`, and `--performance` flags, and embedded lab performance delta tables into Markdown PR comments.
+- **Architecture Documentation:**
+  - [docs/01-concepts/lighthouse-and-core-web-vitals.md](file:///d:/seo-gate/docs/01-concepts/lighthouse-and-core-web-vitals.md)
+  - [docs/02-system-design/performance-and-scaling.md](file:///d:/seo-gate/docs/02-system-design/performance-and-scaling.md)
+  - [docs/02-system-design/trade-offs.md](file:///d:/seo-gate/docs/02-system-design/trade-offs.md)
+  - [docs/04-code-walkthrough/reports-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/reports-walkthrough.md)
+
+### 2. Five concepts you must understand
+1. **Lab Data vs. Field Data:** Lighthouse in CI measures synthetic lab metrics under fixed simulated conditions; CrUX measures real-world user metrics over a 28-day rolling window. Lab data catches regressions before production.
+2. **Median-of-N Averaging:** Virtualized CI runners experience CPU and network jitter. Selecting the median across 3 runs eliminates single-run outliers.
+3. **Flaky-Test Confirmation Re-run:** Guarding developers against false-positive build failures by requiring performance regressions to reproduce twice before failing the gate.
+4. **Standalone Zero-Dependency HTML Reports:** Embedding all styles and scripts directly prevents broken rendering in firewalled or offline enterprise CI pipelines.
+5. **Performance Budgets as Quality Gates:** Establishing hard limits on bundle sizes (e.g., 500kB JS) and Core Web Vitals (e.g., 2500ms LCP) prevents performance decay over time.
+
+### 3. Five self-test questions & answers
+1. **Q: Why does `seo-gate` use the median of 3 Lighthouse runs instead of a single audit?**
+   *A:* Shared CI runners (such as GitHub Actions) exhibit CPU throttling and I/O variance. A single run can fluctuate by $\pm 25\%$; taking the median of 3 runs produces stable, deterministic metrics.
+2. **Q: What is the difference between lab data and field Core Web Vitals?**
+   *A:* Lab data is gathered in a controlled simulated environment during CI testing. Field data is collected by Chrome from real human users over a 28-day window under diverse network and device conditions.
+3. **Q: How does flaky protection prevent false-positive build failures in CI?**
+   *A:* When a regression is first detected, `seo-gate` triggers an immediate confirmation run for that URL. If the second run passes within tolerance, the issue is flagged as transient runner jitter and does not fail the gate.
+4. **Q: Why is the HTML report generated without external CDN dependencies?**
+   *A:* Enterprise CI environments, air-gapped networks, and secure development environments frequently block external CDN URLs. Inlining styles and vanilla JavaScript ensures the report opens reliably anywhere.
+5. **Q: How does `seo-gate` connect to Playwright Chromium for Lighthouse?**
+   *A:* It launches Playwright Chromium with an open remote debugging port (`--remote-debugging-port`) on an available port, allowing Lighthouse to attach via Chrome DevTools Protocol (CDP).
+
+### 4. One thing that could break
+- **CI Runner Resource Contention:** If Lighthouse audits are run on too many pages simultaneously on low-spec CI runners (e.g., 2 vCPUs), audits will experience CPU throttling timeouts. Mitigated by restricting Lighthouse audits to key page archetypes in `pages.critical`.
+
+### 5. 10-Minute "Explain it back" prompt
+> *"Imagine an interviewer asks: 'How did you implement performance regression testing in CI without causing flaky builds?' Spend 10 minutes explaining: (1) why single Lighthouse runs are notoriously flaky in CI, (2) how you implemented median-of-3 averaging and two-strike flaky reproduction, (3) how lab budgets map to Salesforce governor limits, and (4) how you architected an interactive HTML report with zero external dependencies."*
