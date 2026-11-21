@@ -6,6 +6,8 @@ import { crawlTarget, CrawlerError } from '../crawl/fetcher.js';
 import { runChecks } from '../checks/runner.js';
 import { buildRunResult, writeJsonReport } from '../report/json.js';
 import { generateMarkdownReport, writeMarkdownReport } from '../report/markdown.js';
+import { postOrUpdateStickyComment } from '../github/comment.js';
+import { sendSlackNotification, sendTeamsNotification } from '../report/webhook.js';
 import {
   loadBaseline,
   writeBaseline,
@@ -22,6 +24,10 @@ export interface RunCommandOptions {
   format?: string;
   output?: string;
   baseline?: string;
+  pr?: number;
+  githubToken?: string;
+  slackWebhook?: string;
+  teamsWebhook?: string;
 }
 
 export interface BaselineUpdateOptions {
@@ -138,22 +144,86 @@ export async function executeRun(options: RunCommandOptions): Promise<number> {
   runResult.passed = passed;
 
   const outputPath = options.output || 'seo-gate-report.json';
+  const mdReport = generateMarkdownReport({
+    target: config.target,
+    mode: config.mode,
+    totalPages: pages.length,
+    passed,
+    findings: checkResults.findings,
+    diffResult,
+    ignoredCount: checkResults.ignoredCount,
+    activeIgnores: config.ignore,
+  });
+
   if (options.format === 'md' || options.format === 'markdown' || outputPath.endsWith('.md')) {
-    const mdReport = generateMarkdownReport({
-      target: config.target,
-      mode: config.mode,
-      totalPages: pages.length,
-      passed,
-      findings: checkResults.findings,
-      diffResult,
-      ignoredCount: checkResults.ignoredCount,
-      activeIgnores: config.ignore,
-    });
     writeMarkdownReport(mdReport, outputPath);
     console.log(pc.dim(`   ✓ Wrote Markdown report to ${outputPath}`));
   } else {
     writeJsonReport(runResult, outputPath);
     console.log(pc.dim(`   ✓ Wrote JSON report to ${outputPath}`));
+  }
+
+  // 7. Post or update sticky comment on PR if configured
+  const prNumber = options.pr || (process.env.PR_NUMBER ? parseInt(process.env.PR_NUMBER, 10) : undefined);
+  const githubToken = options.githubToken || process.env.GITHUB_TOKEN;
+  const repoFull = process.env.GITHUB_REPOSITORY || process.env.REPO_FULL;
+
+  if (prNumber && githubToken && repoFull) {
+    const [owner, repo] = repoFull.split('/');
+    if (owner && repo) {
+      try {
+        console.log(pc.dim(`   Syncing sticky PR comment on #${prNumber}...`));
+        const commentResult = await postOrUpdateStickyComment({
+          owner,
+          repo,
+          prNumber,
+          token: githubToken,
+          body: mdReport,
+        });
+        console.log(pc.green(`   ✓ Sticky PR comment ${commentResult.action} (id: ${commentResult.commentId})`));
+      } catch (err) {
+        console.warn(pc.yellow(`   ⚠ Could not update PR comment: ${(err as Error).message}`));
+      }
+    }
+  }
+
+  // 8. Dispatch webhooks if configured
+  const slackUrl = options.slackWebhook || process.env.SLACK_WEBHOOK_URL;
+  if (slackUrl) {
+    try {
+      console.log(pc.dim('   Dispatching Slack alert...'));
+      const sent = await sendSlackNotification(slackUrl, {
+        target: config.target,
+        mode: config.mode,
+        passed,
+        totalPages: pages.length,
+        errors: totalErrors,
+        warnings: totalWarnings,
+        regressions,
+      });
+      if (sent) console.log(pc.green('   ✓ Slack notification delivered'));
+    } catch (err) {
+      console.warn(pc.yellow(`   ⚠ Slack notification failed: ${(err as Error).message}`));
+    }
+  }
+
+  const teamsUrl = options.teamsWebhook || process.env.TEAMS_WEBHOOK_URL;
+  if (teamsUrl) {
+    try {
+      console.log(pc.dim('   Dispatching Microsoft Teams alert...'));
+      const sent = await sendTeamsNotification(teamsUrl, {
+        target: config.target,
+        mode: config.mode,
+        passed,
+        totalPages: pages.length,
+        errors: totalErrors,
+        warnings: totalWarnings,
+        regressions,
+      });
+      if (sent) console.log(pc.green('   ✓ Teams notification delivered'));
+    } catch (err) {
+      console.warn(pc.yellow(`   ⚠ Teams notification failed: ${(err as Error).message}`));
+    }
   }
 
   // 7. Print terminal summary

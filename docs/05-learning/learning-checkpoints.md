@@ -84,3 +84,43 @@ This document tracks your progress through each phase of `seo-gate`. After each 
 
 ### 5. 10-Minute "Explain it back" prompt
 > *"Imagine an interviewer asks: 'How did you prevent legacy technical debt from blocking developers while still catching regressions?' Spend 10 minutes explaining: (1) how baselines are captured and stored in Git, (2) how finding fingerprints strip ephemeral hostnames, (3) how three-way partitioning differentiates between new regressions and pre-existing issues, and (4) why the Salesforce deployment analogy of RunSpecifiedTests maps to regression mode."*
+
+
+---
+
+## Phase 3 Checkpoint: CI/CD Automation, Sticky PR Comments & Webhooks
+
+### 1. What was built
+- **Reusable Composite Action (`action.yml`):** Packaged `seo-gate` as a plug-and-play GitHub Action supporting target URL inputs, baseline paths, gate modes, GitHub token injection, and webhook alerts.
+- **Sticky PR Comment Manager (`src/github/comment.ts`):** Implemented an idempotent commenter that searches for `<!-- seo-gate-sticky-comment -->` on the pull request. If found, it updates the existing comment via `PATCH /issues/comments/{id}`; if not found, it creates the comment via `POST`. Eliminates PR spam across multiple commits.
+- **Slack & Teams Webhook Dispatcher (`src/report/webhook.ts`):** Formats Slack Block Kit payloads and Microsoft Teams MessageCard payloads with color-coded status badges, regression lists, and metrics summaries.
+- **Credential Redaction Engine (`redactSensitiveUrl`):** Enforces Rule 5 by stripping basic-auth passwords and query string API keys/tokens before payloads or URLs are transmitted or logged.
+- **Production & PR Workflows:**
+  - `.github/workflows/seo-gate-pr.yml`: Automated pull request quality gate workflow.
+  - `.github/workflows/production-audit.yml`: Scheduled daily cron workflow (`0 6 * * *`) auditing production storefronts to detect CMS or configuration regressions.
+- **Operations Runbooks:** Created [docs/06-operations/runbook.md](file:///d:/seo-gate/docs/06-operations/runbook.md) and [docs/06-operations/how-to-roll-out-to-the-team.md](file:///d:/seo-gate/docs/06-operations/how-to-roll-out-to-the-team.md).
+
+### 2. Five concepts you must understand
+1. **Idempotent Sticky Comments:** In automated CI pipelines, a bot that posts a new comment on every push to a branch pollutes discussion. Searching for a hidden HTML marker (`<!-- seo-gate-sticky-comment -->`) and issuing a `PATCH` request updates the existing comment in place.
+2. **Scheduled Production Monitoring:** Code changes in Git are not the only way websites break. Content editors in CMS platforms, marketing teams editing tags, or CDN route misconfigurations can introduce accidental `noindex` directives on production without any code commits. Daily scheduled audits catch these external issues.
+3. **Zero Secrets in Logs (Rule 5):** Basic-auth credentials in preview URLs (e.g., `https://admin:pass@preview.example.com`) or query tokens (`?token=secret`) must be stripped via `redactSensitiveUrl` before printing to terminal, reports, or webhooks.
+4. **Phased Rollout Strategy:** Starting directly in strict mode breeds resistance from engineers. Rolling out in `mode: report` for 2 weeks builds trust, before transitioning to `mode: regression` enforcement.
+5. **Composite Action Packaging:** An `action.yml` file allows any repository in an organization to consume `seo-gate` with a simple `uses: ./` or `uses: org/seo-gate@v1` step without copy-pasting shell scripts.
+
+### 3. Five self-test questions & answers
+1. **Q: How does `seo-gate` ensure only one comment exists on a pull request across 10 commits?**
+   *A:* It includes a hidden HTML marker (`<!-- seo-gate-sticky-comment -->`) in the markdown comment body. Before posting, it queries the GitHub API for existing comments on that PR number; if it finds the marker, it updates that comment in place via `PATCH` instead of creating a new one.
+2. **Q: Why is a daily scheduled production audit necessary if PR gates already exist?**
+   *A:* Changes made outside of Git repositories—such as CMS content publishing, marketing tag manager updates, or CDN edge rule changes—can de-index pages or break canonicals without triggering pull request workflows.
+3. **Q: How does `seo-gate` protect sensitive credentials in staging URLs?**
+   *A:* `redactSensitiveUrl` parses URLs with the WHATWG URL API and replaces `username` and `password` with `***`, and replaces sensitive query parameters (`token`, `auth`, `key`, `secret`) with `[REDACTED]`.
+4. **Q: What permissions are required by the GitHub Action workflow to post PR comments?**
+   *A:* The workflow must declare `pull-requests: write` permissions in its YAML block to authorize the `GITHUB_TOKEN` to call GitHub's issue comments API.
+5. **Q: What happens if a Slack or Teams webhook call fails due to a network timeout?**
+   *A:* The error is caught and logged as a warning; it does not crash or invalidate the core SEO quality gate run.
+
+### 4. One thing that could break
+- **GitHub Token Permissions:** If a pull request originates from a fork (or an enterprise repo with restricted token permissions), GitHub defaults `GITHUB_TOKEN` to read-only (`pull-requests: read`), causing sticky comment creation to fail with HTTP 403. The error handler catches this gracefully and prints a warning without failing the SEO audit.
+
+### 5. 10-Minute "Explain it back" prompt
+> *"Imagine an interviewer asks: 'How did you integrate your tool into enterprise CI/CD without spamming developers or leaking secrets?' Spend 10 minutes walking through: (1) how composite actions encapsulate execution, (2) how the sticky comment algorithm uses hidden HTML markers to update in place, (3) how URL redaction prevents token leakage, and (4) why daily cron workflows are required to catch CMS regressions."*

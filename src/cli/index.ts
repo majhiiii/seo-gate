@@ -28,6 +28,10 @@ program
   .option('-b, --baseline <path>', 'Path to baseline snapshot JSON file')
   .option('-f, --format <format>', 'Report format: json | md', 'json')
   .option('-o, --output <path>', 'Output path for report')
+  .option('--pr <number>', 'Pull request number for sticky PR comment')
+  .option('--github-token <token>', 'GitHub personal access token or secrets.GITHUB_TOKEN')
+  .option('--slack-webhook <url>', 'Slack incoming webhook URL for alert card')
+  .option('--teams-webhook <url>', 'Microsoft Teams incoming webhook URL for alert card')
   .action(async (options) => {
     const exitCode = await executeRun({
       config: options.config,
@@ -35,6 +39,10 @@ program
       format: options.format,
       output: options.output,
       baseline: options.baseline,
+      pr: options.pr ? parseInt(options.pr, 10) : undefined,
+      githubToken: options.githubToken,
+      slackWebhook: options.slackWebhook,
+      teamsWebhook: options.teamsWebhook,
     });
     process.exit(exitCode);
   });

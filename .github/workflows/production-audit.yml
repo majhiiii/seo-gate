@@ -1,0 +1,52 @@
+name: Scheduled Production SEO Audit
+
+on:
+  schedule:
+    # Runs daily at 06:00 UTC (captures CMS and config changes outside PR code changes)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+permissions:
+  contents: read
+
+jobs:
+  audit-production:
+    name: Production SEO Health Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit Production Storefront
+        run: |
+          pnpm seo-gate run \
+            --config seo-gate.config.yml \
+            --baseline baseline.json \
+            --mode regression \
+            --format md \
+            --output prod-audit-report.md
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+
+      - name: Upload Daily Production Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-seo-report
+          path: |
+            seo-gate-report.json
+            prod-audit-report.md

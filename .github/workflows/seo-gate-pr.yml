@@ -1,0 +1,49 @@
+name: SEO Quality Gate (PR)
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write # Required to post/update sticky PR comments
+
+jobs:
+  seo-gate:
+    name: SEO Regression Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run seo-gate regression audit
+        uses: ./
+        with:
+          target-url: ${{ env.PREVIEW_URL || 'https://preview.example.com' }}
+          config-path: seo-gate.config.yml
+          baseline-path: baseline.json
+          mode: regression
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          slack-webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Upload SEO Audit Report Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-gate-reports
+          path: |
+            seo-gate-report.json
+            seo-gate-report.md

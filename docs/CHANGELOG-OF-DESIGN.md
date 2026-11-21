@@ -38,3 +38,21 @@ This document logs significant architectural choices, technical decisions, and e
 - **Architectural Decision Records:**
   - `ADR-0001`: Baseline file format and Git-based storage strategy.
   - `ADR-0002`: Finding identity and cross-environment diff strategy.
+
+
+---
+
+### [2026-11-21] Phase 3: GitHub Actions Composite Action, Sticky PR Comments & Webhooks
+
+#### Added
+- **Reusable Composite Action (`action.yml`):** Encapsulated `seo-gate` for GitHub Actions workflows with input parameters for targets, configs, tokens, and webhooks.
+- **Sticky PR Comment Manager (`src/github/comment.ts`):** Created idempotent PR commenting using the `<!-- seo-gate-sticky-comment -->` marker to update in place and eliminate notification spam.
+- **Webhook Alerts (`src/report/webhook.ts`):** Implemented Slack Block Kit and Microsoft Teams MessageCard alert dispatchers.
+- **Zero-Secret Redaction Engine (`redactSensitiveUrl`):** Automatically redacts basic-auth passwords and query string tokens from URLs in logs and reports.
+- **Workflows:**
+  - Added `.github/workflows/seo-gate-pr.yml` for pull request testing.
+  - Added `.github/workflows/production-audit.yml` for scheduled daily production monitoring (`0 6 * * *`).
+- **Operational Documentation:**
+  - Added [docs/04-code-walkthrough/github-action-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/github-action-walkthrough.md).
+  - Added [docs/06-operations/runbook.md](file:///d:/seo-gate/docs/06-operations/runbook.md).
+  - Added [docs/06-operations/how-to-roll-out-to-the-team.md](file:///d:/seo-gate/docs/06-operations/how-to-roll-out-to-the-team.md).

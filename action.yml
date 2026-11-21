@@ -1,0 +1,80 @@
+name: 'seo-gate Action'
+description: 'Automated SEO Regression Guard for CI/CD'
+author: 'seo-gate'
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  target-url:
+    description: 'Target preview or staging URL to audit'
+    required: true
+  config-path:
+    description: 'Path to seo-gate.config.yml configuration file'
+    required: false
+    default: 'seo-gate.config.yml'
+  baseline-path:
+    description: 'Path to baseline snapshot JSON file'
+    required: false
+    default: 'baseline.json'
+  mode:
+    description: 'Gate mode override: strict | regression | report'
+    required: false
+    default: 'regression'
+  github-token:
+    description: 'GitHub token for posting sticky PR comments (e.g. secrets.GITHUB_TOKEN)'
+    required: false
+    default: ''
+  slack-webhook:
+    description: 'Slack incoming webhook URL for notifications'
+    required: false
+    default: ''
+  teams-webhook:
+    description: 'Microsoft Teams incoming webhook URL for notifications'
+    required: false
+    default: ''
+
+outputs:
+  passed:
+    description: 'Whether the SEO quality gate passed (true/false)'
+    value: ${{ steps.run-gate.outputs.passed }}
+  regressions:
+    description: 'Number of new SEO regressions detected'
+    value: ${{ steps.run-gate.outputs.regressions }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Run seo-gate
+      id: run-gate
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
+        TEAMS_WEBHOOK_URL: ${{ inputs.teams-webhook }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPO_FULL: ${{ github.repository }}
+      run: |
+        EXTRA_ARGS=""
+        if [ -n "$PR_NUMBER" ] && [ -n "$GITHUB_TOKEN" ]; then
+          EXTRA_ARGS="--pr $PR_NUMBER --github-token $GITHUB_TOKEN"
+        fi
+        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS --slack-webhook $SLACK_WEBHOOK_URL"
+        fi
+        if [ -n "$TEAMS_WEBHOOK_URL" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS --teams-webhook $TEAMS_WEBHOOK_URL"
+        fi
+        if [ -f "${{ inputs.baseline-path }}" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS --baseline ${{ inputs.baseline-path }}"
+        fi
+
+        npx tsx src/cli/index.ts run \
+          --config "${{ inputs.config-path }}" \
+          --mode "${{ inputs.mode }}" \
+          $EXTRA_ARGS

@@ -45,7 +45,11 @@ flowchart LR
    - [docs/03-decisions/ADR-0002-finding-identity-and-diff-strategy.md](file:///d:/seo-gate/docs/03-decisions/ADR-0002-finding-identity-and-diff-strategy.md)
 4. Code walkthrough:
    - [docs/04-code-walkthrough/baseline-diff-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/baseline-diff-walkthrough.md)
-5. Review learning aids:
+   - [docs/04-code-walkthrough/github-action-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/github-action-walkthrough.md)
+5. Operations and Team Rollout:
+   - [docs/06-operations/runbook.md](file:///d:/seo-gate/docs/06-operations/runbook.md)
+   - [docs/06-operations/how-to-roll-out-to-the-team.md](file:///d:/seo-gate/docs/06-operations/how-to-roll-out-to-the-team.md)
+6. Review learning aids:
    - [docs/05-learning/glossary.md](file:///d:/seo-gate/docs/05-learning/glossary.md)
    - [docs/05-learning/learning-checkpoints.md](file:///d:/seo-gate/docs/05-learning/learning-checkpoints.md)
 
