@@ -293,6 +293,187 @@ export function createFixtureApp(): Express {
 </urlset>`);
   });
 
+  // 18. JavaScript-rendered storefront page
+  app.get('/rendered-vs-raw-js-only', (req, res) => {
+    const host = req.get('host') || 'localhost:3000';
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <link rel="canonical" href="http://${host}/rendered-vs-raw-js-only">
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.title = "Client Rendered Product Page Title";
+      const h1 = document.createElement("h1");
+      h1.textContent = "Client Rendered Dynamic H1";
+      document.body.appendChild(h1);
+      const desc = document.createElement("meta");
+      desc.name = "description";
+      desc.content = "Dynamically injected meta description via client-side script execution.";
+      document.head.appendChild(desc);
+    });
+  </script>
+</head>
+<body>
+  <div id="root">Loading product catalog...</div>
+</body>
+</html>`);
+  });
+
+  // 19. Structured data: clean
+  app.get('/structured-data-clean', (req, res) => {
+    const host = req.get('host') || 'localhost:3000';
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Clean Product With Valid Schema Markup</title>
+  <meta name="description" content="Product page containing complete schema.org Product and BreadcrumbList markup.">
+  <link rel="canonical" href="http://${host}/structured-data-clean">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Trailmaster Waterproof Boots",
+    "image": "https://example.com/boots.jpg",
+    "offers": {
+      "@type": "Offer",
+      "price": "149.99",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+</head>
+<body>
+  <h1>Trailmaster Waterproof Boots</h1>
+</body>
+</html>`);
+  });
+
+  // 20. Structured data: syntax error
+  app.get('/structured-data-syntax-error', (req, res) => {
+    const host = req.get('host') || 'localhost:3000';
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Product With Malformed JSON-LD Syntax</title>
+  <meta name="description" content="Product page containing a broken JSON-LD syntax script tag.">
+  <link rel="canonical" href="http://${host}/structured-data-syntax-error">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Broken JSON Shoe",
+    "trailing_comma_error": true,
+  }
+  </script>
+</head>
+<body>
+  <h1>Broken JSON Shoe</h1>
+</body>
+</html>`);
+  });
+
+  // 21. Structured data: missing field
+  app.get('/structured-data-missing-field', (req, res) => {
+    const host = req.get('host') || 'localhost:3000';
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Product With Incomplete Schema Markup</title>
+  <meta name="description" content="Product page missing recommended schema properties.">
+  <link rel="canonical" href="http://${host}/structured-data-missing-field">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Incomplete Product"
+  }
+  </script>
+</head>
+<body>
+  <h1>Incomplete Product</h1>
+</body>
+</html>`);
+  });
+
+  // 22. Hreflang reciprocal pairs
+  app.get('/hreflang-clean-en', (req, res) => {
+    const host = req.get('host') || 'localhost:3000';
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title>English Storefront Landing Page Version</title>
+  <meta name="description" content="English language version of international storefront with alternate hreflang.">
+  <link rel="canonical" href="http://${host}/hreflang-clean-en">
+  <link rel="alternate" hreflang="en" href="http://${host}/hreflang-clean-en">
+  <link rel="alternate" hreflang="es" href="http://${host}/hreflang-clean-es">
+</head>
+<body>
+  <h1>Welcome to Storefront</h1>
+</body>
+</html>`);
+  });
+
+  app.get('/hreflang-clean-es', (req, res) => {
+    const host = req.get('host') || 'localhost:3000';
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Spanish Storefront Landing Page Version</title>
+  <meta name="description" content="Spanish language version of international storefront with alternate hreflang.">
+  <link rel="canonical" href="http://${host}/hreflang-clean-es">
+  <link rel="alternate" hreflang="es" href="http://${host}/hreflang-clean-es">
+  <link rel="alternate" hreflang="en" href="http://${host}/hreflang-clean-en">
+</head>
+<body>
+  <h1>Bienvenido a la Tienda</h1>
+</body>
+</html>`);
+  });
+
+  // 23. Robots.txt
+  app.get('/robots.txt', (req, res) => {
+    res.type('text/plain').send(`User-agent: *
+Disallow: /cart
+Disallow: /admin/
+Allow: /
+`);
+  });
+
+  // 24. Hreflang non-reciprocal pair
+  app.get('/hreflang-broken-en', (req, res) => {
+    const host = req.get('host') || 'localhost:3000';
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title>English Storefront With Broken Reciprocal Hreflang</title>
+  <meta name="description" content="English language version pointing to an alternate that lacks a return link.">
+  <link rel="canonical" href="http://${host}/hreflang-broken-en">
+  <link rel="alternate" hreflang="en" href="http://${host}/hreflang-broken-en">
+  <link rel="alternate" hreflang="es" href="http://${host}/hreflang-broken-es">
+</head>
+<body>
+  <h1>English Storefront</h1>
+</body>
+</html>`);
+  });
+
+  app.get('/hreflang-broken-es', (req, res) => {
+    const host = req.get('host') || 'localhost:3000';
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Spanish Storefront Missing Return Reciprocal Tag</title>
+  <meta name="description" content="Spanish language version that omits reciprocal link back to English.">
+  <link rel="canonical" href="http://${host}/hreflang-broken-es">
+  <link rel="alternate" hreflang="es" href="http://${host}/hreflang-broken-es">
+</head>
+<body>
+  <h1>Tienda en Espanol</h1>
+</body>
+</html>`);
+  });
+
   return app;
 }
 

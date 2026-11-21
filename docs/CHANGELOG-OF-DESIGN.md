@@ -56,3 +56,20 @@ This document logs significant architectural choices, technical decisions, and e
   - Added [docs/04-code-walkthrough/github-action-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/github-action-walkthrough.md).
   - Added [docs/06-operations/runbook.md](file:///d:/seo-gate/docs/06-operations/runbook.md).
   - Added [docs/06-operations/how-to-roll-out-to-the-team.md](file:///d:/seo-gate/docs/06-operations/how-to-roll-out-to-the-team.md).
+
+
+---
+
+### [2026-11-21] Phase 4: Headless Rendering, Structured Data, Hreflang & Crawlability
+
+#### Added
+- **Headless Browser Engine (`src/render/browser.ts`):** Integrated Playwright Chromium with request interception (`page.route()`) to block media, stylesheets, and fonts for high performance in CI.
+- **Rendered vs. Raw Discrepancy Check (`src/checks/rendered-vs-raw.ts`):** Detects hydration gaps where essential tags (`<h1>`, `<title>`, `<meta description>`, `<link rel="canonical">`) exist only after client-side JavaScript execution.
+- **Structured Data Validator (`src/checks/structured-data.ts`):** Validates JSON-LD schema syntax and asserts required schema.org properties for `Product`, `BreadcrumbList`, `Organization`, `FAQPage`, and `Article`.
+- **Hreflang Reciprocity Check (`src/checks/hreflang.ts`):** Validates ISO language/region codes and enforces reciprocal confirmation between localized URLs.
+- **Sitemap Health Audit (`src/checks/sitemap.ts`):** Validates sitemap HTTP status codes, canonical references, and indexability; flags drops >10% vs baseline.
+- **Robots.txt Crawlability Check (`src/checks/robots-txt.ts`):** Checks `User-agent: *` rules, flags accidental `Disallow: /` directives, and verifies crawlability for all paths configured in `pages.critical`.
+- **System Design & Concepts:**
+  - Added [docs/01-concepts/structured-data.md](file:///d:/seo-gate/docs/01-concepts/structured-data.md).
+  - Added [docs/02-system-design/failure-modes-and-reliability.md](file:///d:/seo-gate/docs/02-system-design/failure-modes-and-reliability.md).
+  - Added [docs/04-code-walkthrough/checks-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/checks-walkthrough.md).

@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import type { PageAudit, SeoGateConfig } from '../types.js';
 import { fetchSitemap } from './sitemap.js';
+import { renderPage, closeBrowser } from '../render/browser.js';
 
 export class CrawlerError extends Error {
   constructor(message: string, public readonly cause?: unknown) {
@@ -215,6 +216,21 @@ export async function crawlTarget(config: SeoGateConfig): Promise<PageAudit[]> {
       if (!url) break;
 
       const pageAudit = await fetchPage(url);
+
+      // Perform JavaScript rendering if enabled globally or if page is in critical list
+      const shouldRenderJs = config.pages.crawl?.renderJs || (config.pages.critical && config.pages.critical.some((c) => url.includes(c)));
+      if (shouldRenderJs && pageAudit.statusCode === 200) {
+        try {
+          const renderResult = await renderPage(url);
+          if (renderResult.renderedHtml) {
+            pageAudit.renderedHtml = renderResult.renderedHtml;
+            pageAudit.rendered$ = cheerio.load(renderResult.renderedHtml);
+          }
+        } catch {
+          // Gracefully continue if headless rendering times out
+        }
+      }
+
       results.push(pageAudit);
 
       if (delayMs > 0) {

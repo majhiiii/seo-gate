@@ -16,6 +16,7 @@ const CrawlOptionsSchema = z.object({
   maxDepth: z.number().int().nonnegative().default(3),
   concurrency: z.number().int().min(1).max(20).default(4),
   delayMs: z.number().int().nonnegative().default(100),
+  renderJs: z.boolean().default(false),
 });
 
 const TitleCheckSchema = z.object({
@@ -42,26 +43,38 @@ const NoindexCheckSchema = z.object({
   allowOnStaging: z.boolean().default(false),
 });
 
+const RenderedVsRawCheckSchema = z.object({
+  critical: z.array(z.string()).default(['h1', 'title', 'canonical']),
+});
+
+const StructuredDataCheckSchema = z.object({
+  requiredTypes: z.array(z.string()).default(['Product', 'BreadcrumbList', 'Organization', 'FAQPage', 'Article']),
+});
+
+const HreflangCheckSchema = z.object({
+  requireSelfReferencing: z.boolean().default(true),
+  requireReciprocal: z.boolean().default(true),
+});
+
+const SitemapCheckSchema = z.object({
+  maxDropPercent: z.number().int().min(1).max(100).default(10),
+});
+
+const RobotsTxtCheckSchema = z.object({
+  disallowRootOnError: z.boolean().default(true),
+});
+
 const ChecksSchema = z.object({
-  title: TitleCheckSchema.default({
-    min: 20,
-    max: 65,
-    unique: true,
-  }),
-  metaDescription: MetaDescriptionCheckSchema.default({
-    min: 70,
-    max: 160,
-    unique: true,
-  }),
-  h1: H1CheckSchema.default({
-    requireExactOne: true,
-  }),
-  canonical: CanonicalCheckSchema.default({
-    requireSelfReferencing: true,
-  }),
-  noindex: NoindexCheckSchema.default({
-    allowOnStaging: false,
-  }),
+  title: TitleCheckSchema.default({ min: 20, max: 65, unique: true }),
+  metaDescription: MetaDescriptionCheckSchema.default({ min: 70, max: 160, unique: true }),
+  h1: H1CheckSchema.default({ requireExactOne: true }),
+  canonical: CanonicalCheckSchema.default({ requireSelfReferencing: true }),
+  noindex: NoindexCheckSchema.default({ allowOnStaging: false }),
+  renderedVsRaw: RenderedVsRawCheckSchema.default({ critical: ['h1', 'title', 'canonical'] }),
+  structuredData: StructuredDataCheckSchema.default({ requiredTypes: ['Product', 'BreadcrumbList', 'Organization', 'FAQPage', 'Article'] }),
+  hreflang: HreflangCheckSchema.default({ requireSelfReferencing: true, requireReciprocal: true }),
+  sitemap: SitemapCheckSchema.default({ maxDropPercent: 10 }),
+  robotsTxt: RobotsTxtCheckSchema.default({ disallowRootOnError: true }),
 });
 
 export const SeoGateConfigSchema = z.object({
@@ -77,6 +90,7 @@ export const SeoGateConfigSchema = z.object({
       maxDepth: 3,
       concurrency: 4,
       delayMs: 100,
+      renderJs: false,
     }),
     critical: z.array(z.string()).default([]),
   }),
@@ -86,6 +100,11 @@ export const SeoGateConfigSchema = z.object({
     h1: { requireExactOne: true },
     canonical: { requireSelfReferencing: true },
     noindex: { allowOnStaging: false },
+    renderedVsRaw: { critical: ['h1', 'title', 'canonical'] },
+    structuredData: { requiredTypes: ['Product', 'BreadcrumbList', 'Organization', 'FAQPage', 'Article'] },
+    hreflang: { requireSelfReferencing: true, requireReciprocal: true },
+    sitemap: { maxDropPercent: 10 },
+    robotsTxt: { disallowRootOnError: true },
   }),
   severity_overrides: z.record(z.string(), SeveritySchema).default({}),
   ignore: z.array(IgnoreRuleSchema).default([]),

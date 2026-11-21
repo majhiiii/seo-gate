@@ -34,17 +34,20 @@ flowchart LR
    - [docs/01-concepts/seo-basics.md](file:///d:/seo-gate/docs/01-concepts/seo-basics.md)
    - [docs/01-concepts/http-basics.md](file:///d:/seo-gate/docs/01-concepts/http-basics.md)
    - [docs/01-concepts/how-crawlers-and-rendering-work.md](file:///d:/seo-gate/docs/01-concepts/how-crawlers-and-rendering-work.md)
+   - [docs/01-concepts/structured-data.md](file:///d:/seo-gate/docs/01-concepts/structured-data.md)
    - [docs/01-concepts/ci-cd-concepts.md](file:///d:/seo-gate/docs/01-concepts/ci-cd-concepts.md)
    - [docs/01-concepts/baselines-and-regression-testing.md](file:///d:/seo-gate/docs/01-concepts/baselines-and-regression-testing.md)
 2. Study system design:
    - [docs/02-system-design/data-model.md](file:///d:/seo-gate/docs/02-system-design/data-model.md)
    - [docs/02-system-design/architecture.md](file:///d:/seo-gate/docs/02-system-design/architecture.md)
    - [docs/02-system-design/sequence-diagrams.md](file:///d:/seo-gate/docs/02-system-design/sequence-diagrams.md)
+   - [docs/02-system-design/failure-modes-and-reliability.md](file:///d:/seo-gate/docs/02-system-design/failure-modes-and-reliability.md)
 3. Study architectural decisions:
    - [docs/03-decisions/ADR-0001-baseline-file-format-and-storage.md](file:///d:/seo-gate/docs/03-decisions/ADR-0001-baseline-file-format-and-storage.md)
    - [docs/03-decisions/ADR-0002-finding-identity-and-diff-strategy.md](file:///d:/seo-gate/docs/03-decisions/ADR-0002-finding-identity-and-diff-strategy.md)
 4. Code walkthrough:
    - [docs/04-code-walkthrough/baseline-diff-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/baseline-diff-walkthrough.md)
+   - [docs/04-code-walkthrough/checks-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/checks-walkthrough.md)
    - [docs/04-code-walkthrough/github-action-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/github-action-walkthrough.md)
 5. Operations and Team Rollout:
    - [docs/06-operations/runbook.md](file:///d:/seo-gate/docs/06-operations/runbook.md)

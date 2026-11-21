@@ -25,6 +25,11 @@ export interface Finding {
   docsLink: string;
 }
 
+export interface HreflangTag {
+  lang: string;
+  href: string;
+}
+
 export interface PageAudit {
   /** The requested or final URL */
   url: string;
@@ -34,10 +39,18 @@ export interface PageAudit {
   headers: Record<string, string>;
   /** Raw HTML content as received from server */
   html: string;
+  /** Rendered HTML after JavaScript execution (Playwright) */
+  renderedHtml?: string;
   /** If redirects occurred, the chain of visited URLs */
   redirectChain?: string[];
-  /** Cheerio parsed document object (lazy or precomputed) */
+  /** Cheerio parsed document object for raw HTML */
   $?: import('cheerio').CheerioAPI;
+  /** Cheerio parsed document object for rendered HTML */
+  rendered$?: import('cheerio').CheerioAPI;
+  /** Extracted JSON-LD structured data blocks */
+  structuredData?: any[];
+  /** Extracted alternate hreflang tags */
+  hreflangTags?: HreflangTag[];
 }
 
 export interface IgnoreRule {
@@ -68,6 +81,7 @@ export interface SeoGateConfig {
       maxDepth?: number;
       concurrency?: number;
       delayMs?: number;
+      renderJs?: boolean;
     };
     critical?: string[];
   };
@@ -91,6 +105,22 @@ export interface SeoGateConfig {
     };
     noindex?: {
       allowOnStaging?: boolean;
+    };
+    renderedVsRaw?: {
+      critical?: string[];
+    };
+    structuredData?: {
+      requiredTypes?: string[];
+    };
+    hreflang?: {
+      requireSelfReferencing?: boolean;
+      requireReciprocal?: boolean;
+    };
+    sitemap?: {
+      maxDropPercent?: number;
+    };
+    robotsTxt?: {
+      disallowRootOnError?: boolean;
     };
   };
   /** Custom severity overrides by checkId */

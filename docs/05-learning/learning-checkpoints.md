@@ -124,3 +124,45 @@ This document tracks your progress through each phase of `seo-gate`. After each 
 
 ### 5. 10-Minute "Explain it back" prompt
 > *"Imagine an interviewer asks: 'How did you integrate your tool into enterprise CI/CD without spamming developers or leaking secrets?' Spend 10 minutes walking through: (1) how composite actions encapsulate execution, (2) how the sticky comment algorithm uses hidden HTML markers to update in place, (3) how URL redaction prevents token leakage, and (4) why daily cron workflows are required to catch CMS regressions."*
+
+
+---
+
+## Phase 4 Checkpoint: Raw vs. Rendered Engine, Structured Data, Hreflang & Crawlability
+
+### 1. What was built
+- **Headless Browser Rendering Engine (`src/render/browser.ts`):** Playwright Chromium integration with resource aborting (blocking images, fonts, stylesheets, media) for high throughput and conservative timeouts (15s).
+- **Raw vs. Rendered Discrepancy Check (`src/checks/rendered-vs-raw.ts`):** Compares static Cheerio HTML vs hydrated Playwright DOM. Detects when critical SEO elements (`<title>`, `<h1>`, `<meta description>`, `<link rel="canonical">`) exist only after JavaScript executes, or text content is significantly absent from initial HTML. Critical for Salesforce Experience Cloud / LWC storefronts and SPA frameworks.
+- **Structured Data (JSON-LD) Validator (`src/checks/structured-data.ts`):** Validates JSON-LD schema syntax and enforces required schema.org properties for `Product`, `BreadcrumbList`, `Organization`, `FAQPage`, and `Article`.
+- **Hreflang Reciprocal Validator (`src/checks/hreflang.ts`):** Validates ISO/BCP 47 language-region codes, verifies self-referencing alternate tags, and detects missing reciprocal return tags across multilingual page clusters.
+- **Sitemap Health Check (`src/checks/sitemap.ts`):** Verifies that all sitemap URLs return HTTP 200, declare self-referencing canonical URLs, do not leak `noindex` directives, and flags sudden URL drops (>10% vs baseline).
+- **Robots.txt Crawlability Check (`src/checks/robots-txt.ts`):** Parses robots.txt rules for `User-agent: *`, flags accidental `Disallow: /` directives, and asserts that configured critical paths (`pages.critical`) remain crawlable.
+- **Architecture Documentation:**
+  - [docs/01-concepts/structured-data.md](file:///d:/seo-gate/docs/01-concepts/structured-data.md)
+  - [docs/02-system-design/failure-modes-and-reliability.md](file:///d:/seo-gate/docs/02-system-design/failure-modes-and-reliability.md)
+  - [docs/04-code-walkthrough/checks-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/checks-walkthrough.md)
+
+### 2. Five concepts you must understand
+1. **The Hydration Gap & Two-Wave Indexing:** Search engine crawlers (Googlebot) fetch raw HTML first and defer JavaScript execution to a second queue when compute capacity is available. If key metadata (`<h1>`, `<title>`, `canonical`) only exists after client JavaScript runs, indexing can be delayed or fail entirely.
+2. **Headless Browser CI Optimization:** Running full Chromium browsers in CI can be slow and memory-intensive. By intercepting network requests with `page.route()` and aborting non-essential resources (images, fonts, stylesheets, media), page render times drop by up to 70%.
+3. **Structured Data Contracts:** JSON-LD allows search engines to understand page entities. Invalid JSON syntax or missing required fields (`name`, `itemListElement`, `offers`) causes search engines to reject structured snippets, losing rich search result badges.
+4. **Hreflang Reciprocal Confirmation:** Multi-language SEO requires reciprocal verification. If page `/en` points to `/es`, page `/es` MUST point back to `/en`. If the link is one-directional, search engines discard both tags to prevent third-party spoofing.
+5. **Crawlability vs. Indexability:** A page disallowed in `robots.txt` cannot be crawled, meaning search engines will never see its `noindex` or canonical tags. `robots-txt` ensures search engine crawlers can reach revenue-critical pages.
+
+### 3. Five self-test questions & answers
+1. **Q: Why does `seo-gate` compare raw HTML against rendered HTML instead of only testing rendered HTML?**
+   *A:* Raw HTML is what search engines evaluate immediately upon crawling. If critical SEO elements exist only after JavaScript hydration, the page suffers from the "hydration gap" and risks indexing delays, ranking drops, or canonical misattribution.
+2. **Q: How does `seo-gate` keep Playwright fast in CI environments?**
+   *A:* `src/render/browser.ts` aborts downloads of images, fonts, stylesheets, and media using `page.route()`, only downloading HTML and script assets needed for DOM hydration.
+3. **Q: What is an hreflang reciprocity error and why does it matter?**
+   *A:* It occurs when Page A points to Page B as its language alternate, but Page B does not point back to Page A. Search engines require reciprocal links to prevent unauthorized sites from falsely declaring themselves as translations of other sites.
+4. **Q: What happens if a JSON-LD block has a syntax error like a trailing comma?**
+   *A:* `src/checks/structured-data.ts` catches the `JSON.parse` error and emits a severity: `error` finding (`structured-data-syntax-error`) with the error snippet and a fix hint.
+5. **Q: How does `seo-gate` verify that critical business URLs are not blocked by robots.txt?**
+   *A:* `src/checks/robots-txt.ts` parses `Disallow` directives and tests each URL in `pages.critical` against the rules, emitting an `error` if a critical path matches a disallow pattern.
+
+### 4. One thing that could break
+- **CI Container Dependencies for Playwright:** Running headless Chromium inside minimal Docker containers or Linux runners requires OS-level shared libraries (e.g., `libnss3`, `libgbm1`). In GitHub Actions, using `npx playwright install --with-deps chromium` ensures these libraries are present.
+
+### 5. 10-Minute "Explain it back" prompt
+> *"Imagine an interviewer asks: 'How did you solve the single-page application and dynamic storefront SEO problem?' Spend 10 minutes explaining: (1) why client-rendered LWC/React apps fail initial crawler passes, (2) how Playwright headless rendering compares raw vs hydrated DOM, (3) how structured data and hreflang reciprocity are verified deterministically, and (4) how you optimized headless browser performance in resource-constrained CI environments."*
