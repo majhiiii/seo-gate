@@ -10,6 +10,9 @@ reports/
 seo-gate-report.html
 seo-gate-report.json
 
+# Local documentation & reference (kept private)
+docs/
+
 # Local agent & AI guidelines (kept private)
 AGENTS.md
 CLAUDE.md

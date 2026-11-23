@@ -1,18 +1,34 @@
 {
   "name": "seo-gate",
   "version": "0.1.0",
-  "description": "SEO regression guard for CI/CD",
-  "main": "dist/cli/index.js",
+  "description": "Automated SEO Regression Guard for CI/CD",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "seo-gate": "dist/cli/index.js"
   },
+  "files": [
+    "dist",
+    "action.yml",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/majhiiii/seo-gate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/majhiiii/seo-gate/issues"
+  },
+  "homepage": "https://github.com/majhiiii/seo-gate#readme",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "docs:check": "tsx scripts/check-docs.ts",
+    "prepublishOnly": "pnpm build && pnpm test",
     "seo-gate": "tsx src/cli/index.ts"
   },
   "keywords": [

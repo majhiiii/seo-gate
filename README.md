@@ -152,24 +152,74 @@ jobs:
 
 ---
 
-## 📚 Comprehensive Documentation
+## 🛠️ CLI Reference & Subcommands
 
-The full architecture, system design, and learning curriculum lives in the [`/docs`](docs/00-START-HERE.md) directory:
+| Command | Description | Example |
+|---|---|---|
+| `seo-gate init [url]` | Generate a starter `seo-gate.config.yml` with safe defaults | `npx seo-gate init https://preview.example.com` |
+| `seo-gate run -c <config>` | Run crawler, checks, and regression gate against target | `npx seo-gate run -c seo-gate.config.yml -b baseline.json` |
+| `seo-gate baseline update -c <config>` | Crawl target or production and write a fresh `baseline.json` | `npx seo-gate baseline update -c seo-gate.config.yml` |
+| `seo-gate diff <fileA> <fileB>` | Compare two JSON run results and summarize regressions | `npx seo-gate diff baseline.json report.json` |
 
-- 🧭 **[Start Here](docs/00-START-HERE.md):** Onboarding guide, 30-min/3-hr reading paths, and quick demo script.
-- 📋 **[Architecture Cheat Sheet](docs/ARCHITECTURE-CHEATSHEET.md):** 1-page printable system reference, data contracts, and exit codes.
-- 📐 **[System Architecture](docs/02-system-design/architecture.md):** Decoupled layers, invariants, and module guide.
-- 🔒 **[Security Architecture](docs/02-system-design/security.md):** Zero-secret redaction, credential isolation, and supply chain care.
-- ⚡ **[Performance & Scaling](docs/02-system-design/performance-and-scaling.md):** Tiered crawling, Playwright resource aborting, and Lighthouse lab budgets.
-- ⚖️ **[Trade-Offs & Decisions](docs/02-system-design/trade-offs.md):** Playwright vs Puppeteer, Git baselines vs databases, strict vs regression modes.
-- 💼 **[Interview Mastery Guide (46 Q&As)](docs/05-learning/interview-questions-and-answers.md):** Comprehensive model answers for technical interviews.
-- 🎯 **[15 Hands-On Exercises](docs/05-learning/exercises.md):** Progressive challenges with hints and collapsed solution outlines.
-- 🗣️ **[How to Explain This Project](docs/05-learning/how-to-explain-this-project.md):** 30-second pitch, 2-minute overview, and 10-minute deep-dive guide.
-- 📖 **[Salesforce Analogies Guide](docs/05-learning/salesforce-analogies.md):** Concepts explained using Apex, Validation Rules, and Governor Limits.
-- 🛠️ **[Operations Runbook](docs/06-operations/runbook.md):** SOPs, CI/CD setup, troubleshooting, and exit code reference.
-- 🔍 **[Troubleshooting Guide](docs/06-operations/troubleshooting.md):** Diagnostic matrices for timeouts, browser dependencies, and gate failures.
-- ➕ **[How to Author a Check](docs/06-operations/how-to-add-a-check.md):** Step-by-step developer tutorial for extending the check suite.
-- 🌱 **[What I Learned & What's Next](docs/05-learning/what-i-learned-and-what-to-learn-next.md):** Personal reflections on engineering growth and future roadmaps.
+### CLI Options for `seo-gate run`:
+- `-c, --config <path>`: Path to configuration YAML (Required)
+- `-b, --baseline <path>`: Path to baseline JSON snapshot (for regression mode)
+- `-m, --mode <mode>`: Override gate mode (`strict`, `regression`, `report`)
+- `-f, --format <format>`: Report format (`json`, `md`, `html`)
+- `-o, --output <path>`: Custom report output path
+- `--html <path>`: Generate a standalone interactive HTML report
+- `--performance`: Run programmatic Lighthouse lab audits on critical pages
+- `--pr <number>`: Pull request number for posting/updating a sticky PR comment
+- `--github-token <token>`: GitHub token for commenting (`secrets.GITHUB_TOKEN`)
+- `--slack-webhook <url>`: Slack incoming webhook URL for alert cards
+- `--teams-webhook <url>`: Microsoft Teams incoming webhook URL
+
+---
+
+## 🔍 The 11 Core Checks
+
+| Check ID | Default Severity | What It Inspects |
+|---|---|---|
+| `noindex` | `error` | Blocks accidental `noindex` meta tags or `X-Robots-Tag` headers on indexable pages. |
+| `http-status` | `error` | Asserts HTTP 200; flags 4xx/5xx errors, redirect chains (>1 hop), and redirect loops. |
+| `canonical` | `error` | Asserts presence, absolute URL format, self-referencing consistency, and non-404 targets. |
+| `robots-txt` | `error` | Asserts robots.txt exists, flags accidental `Disallow: /`, and verifies critical paths. |
+| `rendered-vs-raw` | `error` | Compares raw Cheerio HTML vs Playwright DOM to catch the **hydration gap** on SPA/LWC apps. |
+| `title` | `warn` / `error` | Asserts existence, uniqueness across page set, and length bounds (20–65 characters). |
+| `meta-description` | `warn` | Asserts existence, uniqueness, and length bounds (70–160 characters). |
+| `h1` | `warn` / `error` | Asserts exactly one `<h1>` heading per page. |
+| `structured-data` | `warn` / `error` | Validates JSON-LD syntax and asserts required schema properties (`Product`, `BreadcrumbList`, etc.). |
+| `hreflang` | `error` | Asserts ISO language codes, self-references, and reciprocal return tags across languages. |
+| `sitemap` | `warn` / `error` | Asserts sitemap URLs return 200, are canonical, and flags sudden URL drops (>10%). |
+
+---
+
+## 📦 Programmatic Node.js SDK
+
+`seo-gate` can also be imported directly as a TypeScript / ES module library:
+
+```typescript
+import { crawlTarget, runChecks, evaluateGate, generateHtmlReport } from 'seo-gate';
+import { loadConfig } from 'seo-gate';
+
+// 1. Load config
+const config = loadConfig('seo-gate.config.yml');
+
+// 2. Crawl target
+const pages = await crawlTarget(config);
+
+// 3. Run pure checks
+const result = runChecks(pages, config);
+
+// 4. Generate standalone HTML report
+const html = generateHtmlReport({
+  target: config.target,
+  mode: config.mode,
+  totalPages: pages.length,
+  passed: result.findings.filter(f => f.severity === 'error').length === 0,
+  findings: result.findings
+});
+```
 
 ---
 
