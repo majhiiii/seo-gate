@@ -154,15 +154,22 @@ jobs:
 
 ## 📚 Comprehensive Documentation
 
-The full architecture and learning curriculum lives in the `/docs` directory:
+The full architecture, system design, and learning curriculum lives in the [`/docs`](docs/00-START-HERE.md) directory:
 
-- 🧭 **[Start Here](docs/00-START-HERE.md):** Onboarding guide, 30-min/3-hr reading paths, and quick demo.
+- 🧭 **[Start Here](docs/00-START-HERE.md):** Onboarding guide, 30-min/3-hr reading paths, and quick demo script.
+- 📋 **[Architecture Cheat Sheet](docs/ARCHITECTURE-CHEATSHEET.md):** 1-page printable system reference, data contracts, and exit codes.
 - 📐 **[System Architecture](docs/02-system-design/architecture.md):** Decoupled layers, invariants, and module guide.
-- 📊 **[Data Model](docs/02-system-design/data-model.md):** Zod schemas, ER diagrams, and `schemaVersion: 1`.
-- 🔀 **[Sequence Diagrams](docs/02-system-design/sequence-diagrams.md):** PR workflows, baseline generation, and state transitions.
+- 🔒 **[Security Architecture](docs/02-system-design/security.md):** Zero-secret redaction, credential isolation, and supply chain care.
+- ⚡ **[Performance & Scaling](docs/02-system-design/performance-and-scaling.md):** Tiered crawling, Playwright resource aborting, and Lighthouse lab budgets.
+- ⚖️ **[Trade-Offs & Decisions](docs/02-system-design/trade-offs.md):** Playwright vs Puppeteer, Git baselines vs databases, strict vs regression modes.
+- 💼 **[Interview Mastery Guide (46 Q&As)](docs/05-learning/interview-questions-and-answers.md):** Comprehensive model answers for technical interviews.
+- 🎯 **[15 Hands-On Exercises](docs/05-learning/exercises.md):** Progressive challenges with hints and collapsed solution outlines.
+- 🗣️ **[How to Explain This Project](docs/05-learning/how-to-explain-this-project.md):** 30-second pitch, 2-minute overview, and 10-minute deep-dive guide.
 - 📖 **[Salesforce Analogies Guide](docs/05-learning/salesforce-analogies.md):** Concepts explained using Apex, Validation Rules, and Governor Limits.
-- 🛠️ **[Operations Runbook](docs/06-operations/runbook.md):** Local SOPs, troubleshooting, and exit code reference.
-- 👥 **[Team Rollout Plan](docs/06-operations/how-to-roll-out-to-the-team.md):** 4-week step-by-step rollout framework.
+- 🛠️ **[Operations Runbook](docs/06-operations/runbook.md):** SOPs, CI/CD setup, troubleshooting, and exit code reference.
+- 🔍 **[Troubleshooting Guide](docs/06-operations/troubleshooting.md):** Diagnostic matrices for timeouts, browser dependencies, and gate failures.
+- ➕ **[How to Author a Check](docs/06-operations/how-to-add-a-check.md):** Step-by-step developer tutorial for extending the check suite.
+- 🌱 **[What I Learned & What's Next](docs/05-learning/what-i-learned-and-what-to-learn-next.md):** Personal reflections on engineering growth and future roadmaps.
 
 ---
 

@@ -25,9 +25,11 @@ flowchart LR
 
 #### 30-Minute Architecture & Concept Path
 1. [00-START-HERE.md](file:///d:/seo-gate/docs/00-START-HERE.md) (this document)
-2. [docs/02-system-design/overview.md](file:///d:/seo-gate/docs/02-system-design/overview.md)
-3. [docs/02-system-design/architecture.md](file:///d:/seo-gate/docs/02-system-design/architecture.md)
-4. [docs/05-learning/salesforce-analogies.md](file:///d:/seo-gate/docs/05-learning/salesforce-analogies.md)
+2. [docs/ARCHITECTURE-CHEATSHEET.md](file:///d:/seo-gate/docs/ARCHITECTURE-CHEATSHEET.md) (1-page printable reference)
+3. [docs/02-system-design/overview.md](file:///d:/seo-gate/docs/02-system-design/overview.md)
+4. [docs/02-system-design/architecture.md](file:///d:/seo-gate/docs/02-system-design/architecture.md)
+5. [docs/05-learning/salesforce-analogies.md](file:///d:/seo-gate/docs/05-learning/salesforce-analogies.md)
+6. [docs/05-learning/how-to-explain-this-project.md](file:///d:/seo-gate/docs/05-learning/how-to-explain-this-project.md)
 
 #### 3-Hour Deep-Dive Engineering Path
 1. Read all concepts:
@@ -39,10 +41,15 @@ flowchart LR
    - [docs/01-concepts/ci-cd-concepts.md](file:///d:/seo-gate/docs/01-concepts/ci-cd-concepts.md)
    - [docs/01-concepts/baselines-and-regression-testing.md](file:///d:/seo-gate/docs/01-concepts/baselines-and-regression-testing.md)
 2. Study system design:
-   - [docs/02-system-design/data-model.md](file:///d:/seo-gate/docs/02-system-design/data-model.md)
+   - [docs/02-system-design/overview.md](file:///d:/seo-gate/docs/02-system-design/overview.md)
    - [docs/02-system-design/architecture.md](file:///d:/seo-gate/docs/02-system-design/architecture.md)
+   - [docs/02-system-design/data-model.md](file:///d:/seo-gate/docs/02-system-design/data-model.md)
+   - [docs/02-system-design/data-flow.md](file:///d:/seo-gate/docs/02-system-design/data-flow.md)
+   - [docs/02-system-design/module-guide.md](file:///d:/seo-gate/docs/02-system-design/module-guide.md)
+   - [docs/02-system-design/config-design.md](file:///d:/seo-gate/docs/02-system-design/config-design.md)
    - [docs/02-system-design/sequence-diagrams.md](file:///d:/seo-gate/docs/02-system-design/sequence-diagrams.md)
    - [docs/02-system-design/failure-modes-and-reliability.md](file:///d:/seo-gate/docs/02-system-design/failure-modes-and-reliability.md)
+   - [docs/02-system-design/security.md](file:///d:/seo-gate/docs/02-system-design/security.md)
    - [docs/02-system-design/performance-and-scaling.md](file:///d:/seo-gate/docs/02-system-design/performance-and-scaling.md)
    - [docs/02-system-design/trade-offs.md](file:///d:/seo-gate/docs/02-system-design/trade-offs.md)
 3. Study architectural decisions:
@@ -50,16 +57,24 @@ flowchart LR
    - [docs/03-decisions/ADR-0002-finding-identity-and-diff-strategy.md](file:///d:/seo-gate/docs/03-decisions/ADR-0002-finding-identity-and-diff-strategy.md)
 4. Code walkthrough:
    - [docs/04-code-walkthrough/reading-order.md](file:///d:/seo-gate/docs/04-code-walkthrough/reading-order.md)
-   - [docs/04-code-walkthrough/baseline-diff-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/baseline-diff-walkthrough.md)
+   - [docs/04-code-walkthrough/cli-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/cli-walkthrough.md)
+   - [docs/04-code-walkthrough/crawler-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/crawler-walkthrough.md)
    - [docs/04-code-walkthrough/checks-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/checks-walkthrough.md)
+   - [docs/04-code-walkthrough/baseline-diff-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/baseline-diff-walkthrough.md)
    - [docs/04-code-walkthrough/reports-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/reports-walkthrough.md)
    - [docs/04-code-walkthrough/github-action-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/github-action-walkthrough.md)
 5. Operations and Team Rollout:
    - [docs/06-operations/runbook.md](file:///d:/seo-gate/docs/06-operations/runbook.md)
+   - [docs/06-operations/troubleshooting.md](file:///d:/seo-gate/docs/06-operations/troubleshooting.md)
+   - [docs/06-operations/how-to-add-a-check.md](file:///d:/seo-gate/docs/06-operations/how-to-add-a-check.md)
    - [docs/06-operations/how-to-roll-out-to-the-team.md](file:///d:/seo-gate/docs/06-operations/how-to-roll-out-to-the-team.md)
 6. Review learning aids:
    - [docs/05-learning/glossary.md](file:///d:/seo-gate/docs/05-learning/glossary.md)
+   - [docs/05-learning/faq.md](file:///d:/seo-gate/docs/05-learning/faq.md)
+   - [docs/05-learning/exercises.md](file:///d:/seo-gate/docs/05-learning/exercises.md) (15 progressive hands-on exercises)
+   - [docs/05-learning/interview-questions-and-answers.md](file:///d:/seo-gate/docs/05-learning/interview-questions-and-answers.md) (46 technical interview Q&As)
    - [docs/05-learning/learning-checkpoints.md](file:///d:/seo-gate/docs/05-learning/learning-checkpoints.md)
+   - [docs/05-learning/what-i-learned-and-what-to-learn-next.md](file:///d:/seo-gate/docs/05-learning/what-i-learned-and-what-to-learn-next.md)
 
 ### 5-Minute Quick Demo
 1. Run local test fixture:

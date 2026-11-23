@@ -90,3 +90,28 @@ This document logs significant architectural choices, technical decisions, and e
   - Added [docs/02-system-design/performance-and-scaling.md](file:///d:/seo-gate/docs/02-system-design/performance-and-scaling.md).
   - Added [docs/02-system-design/trade-offs.md](file:///d:/seo-gate/docs/02-system-design/trade-offs.md).
   - Added [docs/04-code-walkthrough/reports-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/reports-walkthrough.md).
+
+
+---
+
+### [2026-11-23] Phase 6: Documentation Polish, Security Hardening, Interview Mastery & Release v0.1.0
+
+#### Added
+- **Complete Architecture Documentation Suite:**
+  - Added [docs/02-system-design/security.md](file:///d:/seo-gate/docs/02-system-design/security.md).
+  - Added [docs/02-system-design/data-flow.md](file:///d:/seo-gate/docs/02-system-design/data-flow.md).
+  - Added [docs/02-system-design/module-guide.md](file:///d:/seo-gate/docs/02-system-design/module-guide.md).
+  - Added [docs/02-system-design/config-design.md](file:///d:/seo-gate/docs/02-system-design/config-design.md).
+  - Added [docs/04-code-walkthrough/cli-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/cli-walkthrough.md).
+  - Added [docs/04-code-walkthrough/crawler-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/crawler-walkthrough.md).
+  - Added [docs/06-operations/troubleshooting.md](file:///d:/seo-gate/docs/06-operations/troubleshooting.md).
+  - Added [docs/06-operations/how-to-add-a-check.md](file:///d:/seo-gate/docs/06-operations/how-to-add-a-check.md).
+  - Added [docs/ARCHITECTURE-CHEATSHEET.md](file:///d:/seo-gate/docs/ARCHITECTURE-CHEATSHEET.md) (1-page printable reference).
+- **Interview Mastery Kit & Learning Aids:**
+  - Added [docs/05-learning/interview-questions-and-answers.md](file:///d:/seo-gate/docs/05-learning/interview-questions-and-answers.md) (46 in-depth questions and model answers).
+  - Added [docs/05-learning/exercises.md](file:///d:/seo-gate/docs/05-learning/exercises.md) (15 progressive hands-on challenges with hints and collapsed solutions).
+  - Added [docs/05-learning/faq.md](file:///d:/seo-gate/docs/05-learning/faq.md).
+  - Added [docs/05-learning/how-to-explain-this-project.md](file:///d:/seo-gate/docs/05-learning/how-to-explain-this-project.md).
+  - Added [docs/05-learning/what-i-learned-and-what-to-learn-next.md](file:///d:/seo-gate/docs/05-learning/what-i-learned-and-what-to-learn-next.md).
+- **Comprehensive End-to-End Demo Script (`scripts/demo-full.ts`):** Demonstrating the full crawl, Playwright hydration, 11 pure checks, Lighthouse lab performance, differential gate, and multi-format report outputs.
+- **Release Preparation:** Tagged v0.1.0 with complete passing test suite and verified 100% doc link integrity.

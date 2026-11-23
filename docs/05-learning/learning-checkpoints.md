@@ -208,3 +208,41 @@ This document tracks your progress through each phase of `seo-gate`. After each 
 
 ### 5. 10-Minute "Explain it back" prompt
 > *"Imagine an interviewer asks: 'How did you implement performance regression testing in CI without causing flaky builds?' Spend 10 minutes explaining: (1) why single Lighthouse runs are notoriously flaky in CI, (2) how you implemented median-of-3 averaging and two-strike flaky reproduction, (3) how lab budgets map to Salesforce governor limits, and (4) how you architected an interactive HTML report with zero external dependencies."*
+
+
+---
+
+## Phase 6 Checkpoint: Documentation Polish, Security Audit, Interview Mastery & Release v0.1.0
+
+### 1. What was built
+- **Comprehensive System Design & Operational Documentation:** Added [docs/02-system-design/security.md](file:///d:/seo-gate/docs/02-system-design/security.md), [docs/02-system-design/data-flow.md](file:///d:/seo-gate/docs/02-system-design/data-flow.md), [docs/02-system-design/module-guide.md](file:///d:/seo-gate/docs/02-system-design/module-guide.md), [docs/02-system-design/config-design.md](file:///d:/seo-gate/docs/02-system-design/config-design.md), [docs/04-code-walkthrough/cli-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/cli-walkthrough.md), [docs/04-code-walkthrough/crawler-walkthrough.md](file:///d:/seo-gate/docs/04-code-walkthrough/crawler-walkthrough.md), [docs/06-operations/troubleshooting.md](file:///d:/seo-gate/docs/06-operations/troubleshooting.md), [docs/06-operations/how-to-add-a-check.md](file:///d:/seo-gate/docs/06-operations/how-to-add-a-check.md), and [docs/ARCHITECTURE-CHEATSHEET.md](file:///d:/seo-gate/docs/ARCHITECTURE-CHEATSHEET.md).
+- **Interview Mastery Kit (46 Questions & Answers):** Created [docs/05-learning/interview-questions-and-answers.md](file:///d:/seo-gate/docs/05-learning/interview-questions-and-answers.md) with deep model answers across architecture, trade-offs, failure handling, testing, scaling, and security.
+- **15 Hands-On Progressive Exercises:** Created [docs/05-learning/exercises.md](file:///d:/seo-gate/docs/05-learning/exercises.md) with practical challenges from beginner CLI usage to advanced Playwright request interceptors and flaky-test simulation, complete with hints and solution outlines.
+- **Pitch & Reflection Guides:** Added [docs/05-learning/how-to-explain-this-project.md](file:///d:/seo-gate/docs/05-learning/how-to-explain-this-project.md) (30s pitch, 2m summary, 10m deep dive) and [docs/05-learning/what-i-learned-and-what-to-learn-next.md](file:///d:/seo-gate/docs/05-learning/what-i-learned-and-what-to-learn-next.md).
+- **End-to-End Architectural Demo (`scripts/demo-full.ts`):** Orchestrates the full lifecycle: polite crawling, Playwright hydration, 11 pure checks, Lighthouse lab audit, differential regression analysis, and multi-format report generation (JSON, Markdown, HTML).
+- **Quality Verification:** Verified strict TypeScript compilation, zero broken links with `pnpm docs:check`, 125 unit/integration tests passing, and 85%+ coverage on the check suite.
+
+### 2. Five concepts you must understand
+1. **Negative Constraints in Architecture:** Architectural discipline is enforced by negative constraints: defining what each module must *never* do (e.g., checks never do I/O, crawlers never decide pass/fail, formatters never mutate findings).
+2. **Zero-Trust CI Credential Redaction:** Automating security via WHATWG URL parsing in `redactSensitiveUrl` prevents accidental leakage of basic-auth credentials and query tokens into public PR logs or webhooks.
+3. **Ephemeral Staging URL Diffing:** Fingerprinting findings by `${checkId}::${pathname}` enables preview environments on dynamic hostnames to diff seamlessly against static production baselines.
+4. **Two-Wave Indexing & Hydration Gaps:** Why search engines defer client-side JavaScript execution, and how raw-vs-rendered inspection catches tags missing from initial server HTML.
+5. **Two-Strike Flaky Protection:** Guarding developer velocity by requiring performance regressions to reproduce twice before failing the gate.
+
+### 3. Five self-test questions & answers
+1. **Q: How does `seo-gate` ensure no secrets leak into GitHub Actions logs?**
+   *A:* All URLs pass through `redactSensitiveUrl`, which strips basic-auth passwords (`***:***`) and redacts query string parameters matching tokens or keys with `[REDACTED]`.
+2. **Q: Why are all checks in `src/checks/` designed as pure functions?**
+   *A:* Pure functions have no side effects, do no I/O, execute in milliseconds in-memory, and make unit testing deterministic and reliable without mocking networks.
+3. **Q: How does `seo-gate` avoid blocking pull requests on existing technical debt?**
+   *A:* In `mode: regression`, findings are partitioned into new, resolved, and unchanged. The build only fails on newly introduced error-severity regressions.
+4. **Q: How does `seo-gate` keep Playwright rendering fast in CI?**
+   *A:* It intercepts network requests using `page.route()` and aborts images, stylesheets, fonts, and media, downloading only the HTML and JavaScript needed for DOM hydration.
+5. **Q: How is `seo-gate` packaged for team reuse?**
+   *A:* As a reusable composite GitHub Action (`action.yml`) that any repository can invoke in a single step with standard inputs.
+
+### 4. One thing that could break
+- **Expired Ignore Debt:** If teams set short expiration dates on `ignore` rules without addressing underlying code issues, builds will begin failing again as soon as the date passes. Documented expiration prevents technical debt from being forgotten.
+
+### 5. 10-Minute "Explain it back" prompt
+> *"Imagine an interviewer asks: 'Walk me through the design of a developer tool you built from scratch. What were your non-goals, what trade-offs did you make, and how did you verify its reliability?' Spend 10 minutes walking through: (1) why you built `seo-gate`, (2) why you chose Git baselines over external databases, (3) how pure functions enabled high-throughput testing, (4) how you solved the client-side JavaScript hydration gap, and (5) what you would do differently next time."*
