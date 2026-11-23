@@ -27,7 +27,6 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "docs:check": "tsx scripts/check-docs.ts",
     "prepublishOnly": "pnpm build && pnpm test",
     "seo-gate": "tsx src/cli/index.ts"
   },

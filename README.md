@@ -359,8 +359,8 @@ pnpm test
 # Run tests with code coverage report (>= 85% checks gate)
 pnpm test:coverage
 
-# Validate documentation internal links and markdown blocks
-pnpm docs:check
+# Compile TypeScript production build
+pnpm build
 ```
 
 ---
